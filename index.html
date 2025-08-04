@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>章鱼喷墨机</title>
+    <title>喷墨机</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/kGYP6CQw/6.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -100,6 +100,11 @@
             padding: 6px 12px;
             border-radius: 10px;
             color: var(--text-color);
+        }
+        #qq-action-create-group img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
         }
         #qq-action-add-friend {
             font-weight: 500;
@@ -272,21 +277,43 @@
             padding-bottom: 70px; 
         }
         .message-area { flex-grow: 1; overflow-y: auto; padding: 0 10px; scroll-behavior: smooth; }
-        .message-wrapper { display: flex; margin-bottom: 12px; align-items: flex-start; transition: background-color 0.2s; flex-direction: column; }
+        .message-wrapper { position: relative; display: flex; margin-bottom: 12px; align-items: flex-start; transition: background-color 0.2s; flex-direction: column; }
         .message-wrapper.group-message { margin-bottom: 18px; }
         .message-wrapper.sent { align-items: flex-end; }
         .message-wrapper.received { align-items: flex-start; }
         .message-wrapper.system-notification { align-items: center; }
         .message-bubble-row { display: flex; width: 100%; align-items: flex-start; }
         .message-wrapper.sent .message-bubble-row { flex-direction: row-reverse; }
-        .message-wrapper.multi-select-selected { background-color: rgba(144, 202, 249, 0.2); border-radius: 10px; padding: 4px 0; }
-        .message-wrapper.multi-select-selected .message-bubble-row { width: auto; }
         
+        /* BUG FIX #1 START: Definitive Fix for Multi-select Layout. Does not alter layout. */
+        .message-wrapper.multi-select-selected::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0; left: 0; right: 0; /* Cover the exact area */
+            background-color: rgba(144, 202, 249, 0.2); /* Semi-transparent overlay */
+            border-radius: 10px; /* Match the intended wrapper shape */
+            z-index: -1; 
+            pointer-events: none; /* Make sure it doesn't interfere with clicks */
+        }
+        /* BUG FIX #1 END */
+        
+        .message-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: calc(100% - 44px);
+        }
+        .message-wrapper.sent .message-content-wrapper {
+            align-items: flex-end;
+        }
+        .message-wrapper.received .message-content-wrapper {
+            align-items: flex-start;
+        }
         .message-info { 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             position: relative;
+            flex-shrink: 0;
         }
         .group-nickname {
             position: absolute;
@@ -305,7 +332,7 @@
         
         .message-bubble {
             position: relative;
-            max-width: 70%;
+            max-width: 100%;
             padding: 0;
             border-radius: var(--border-radius);
             word-wrap: break-word;
@@ -390,53 +417,45 @@
         .image-bubble { max-width: 120px; border-radius: var(--border-radius); margin: 0; padding: 4px; background-color: rgba(255, 255, 255, 0.5); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; }
         .image-bubble img { width: 100%; height: auto; display: block; border-radius: calc(var(--border-radius) - 4px); }
         
-        /* 【重构】语音转文字功能样式 */
-        .voice-bubble { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; min-width: 90px; max-width: 200px; }
+        /* BUG FIX #3 START: Voice-to-text styles */
+        .voice-bubble { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 8px 12px; 
+            min-width: 90px; 
+            max-width: 200px;
+        }
         .voice-bubble .play-icon { width: 18px; height: 18px; flex-shrink: 0; fill: currentColor; }
         .voice-bubble .duration { font-size: 13px; margin: 0 8px; white-space: nowrap; }
         .message-wrapper.sent .play-icon { transform: scaleX(-1); }
         .message-wrapper.sent .voice-bubble { flex-direction: row-reverse; }
-
-        .voice-transcript-container {
-            position: relative;
-            align-self: stretch;
-            margin-top: -1px; /* 紧贴语音条 */
-            z-index: -1;
-            padding: 0 50px;
-        }
-        .message-wrapper.sent .voice-transcript-container { text-align: right; }
-        .message-wrapper.received .voice-transcript-container { text-align: left; }
         
         .voice-transcript {
             font-size: 14px;
             line-height: 1.6;
             color: var(--text-secondary);
-            text-shadow: 0 1px 1px rgba(255,255,255,0.7);
             padding: 8px 12px;
-            background-color: rgba(0, 0, 0, 0.04);
+            margin: 6px 8px 0 8px;
             border-radius: 6px;
             word-break: break-word;
-            display: inline-block;
-            max-width: 100%;
-            text-align: left;
-            position: relative;
-            transform-origin: top;
-            transform: scaleY(0);
             opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin-top 0.3s ease-out;
+            background-color: rgba(0, 0, 0, 0.04); /* Default light background */
         }
         .voice-transcript.active {
-             transform: scaleY(1);
-             opacity: 1;
+            opacity: 1;
+            max-height: 200px; /* A large enough value to allow content to expand */
         }
-        .voice-transcript::before {
-            content: '';
-            position: absolute;
-            top:0; left:0; right:0; bottom:0;
-            background-color: var(--white-color);
-            opacity: 0.3;
-            border-radius: inherit;
+        .message-wrapper.sent .voice-transcript {
+            background-color: rgba(255, 235, 235, 0.9); /* Lighter version of default sent color */
         }
+        .message-wrapper.received .voice-transcript {
+            background-color: rgba(240, 240, 240, 0.9); /* Lighter version of default received color */
+        }
+        /* BUG FIX #3 END */
 
         .loading-spinner {
             display: none; 
@@ -621,17 +640,45 @@
 
         .gift-card {
             width: 230px;
-            background-color: #fff;
-            border: 2px solid #333;
-            border-radius: var(--border-radius);
-            box-shadow: 4px 4px 0px #ddd;
-            padding: 10px;
-            display: flex;
-            align-items: center;
+            height: 90px;
             cursor: pointer;
             margin: 0;
             position: relative;
-            overflow: hidden;
+            perspective: 1000px;
+            background: none;
+            border: none;
+            box-shadow: none;
+        }
+        .gift-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .gift-card.is-flipped .gift-card-inner {
+            transform: rotateY(180deg);
+        }
+        .gift-card-front, .gift-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            box-shadow: 4px 4px 0px #ddd;
+            border: 2px solid #333;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+        .gift-card-back {
+            transform: rotateY(180deg);
+            justify-content: center;
+            flex-direction: column;
+            font-family: 'Comic Sans MS', 'Chalkduster', 'Handwriting', cursive;
         }
         .gift-card-icon {
             width: 50px;
@@ -646,15 +693,11 @@
             font-family: 'Comic Sans MS', 'Chalkduster', 'Handwriting', cursive;
         }
         .gift-card-description { 
-            font-size: 14px; color: #555; background-color: rgba(240,240,240,0.9); 
-            padding: 8px 12px; margin-top: 5px; margin-left: 54px; margin-right: 54px; 
-            border-radius: 10px; line-height: 1.6; max-width: calc(100% - 108px); 
-            display: none; animation: fadeIn 0.3s ease;
+            font-size: 14px;
+            color: #555;
+            padding: 8px;
+            line-height: 1.5;
         }
-        .gift-card-description.active { display: block; }
-        .message-wrapper.sent .gift-card-description { align-self: flex-end; margin-right: 54px; margin-left: auto; }
-        .message-wrapper.received .gift-card-description { align-self: flex-start; margin-left: 54px; margin-right: auto; }
-        
         .gift-card-received-stamp {
             position: absolute;
             top: 5px;
@@ -669,6 +712,7 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             font-family: 'Comic Sans MS', 'Chalkduster', 'Handwriting', cursive;
+            z-index: 5;
         }
         .gift-card.received .gift-card-received-stamp {
             opacity: 1;
@@ -965,18 +1009,32 @@
             align-items: center;
             gap: 15px;
             margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 15px;
+            border: 1px solid #f0f0f0;
+            border-radius: var(--border-radius);
+            background: #fff;
         }
         #beautify-screen .icon-custom-item:last-child {
-            border-bottom: none;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        #beautify-screen .icon-preview-label {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
         }
         #beautify-screen .icon-preview {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 12px;
             object-fit: cover;
-            flex-shrink: 0;
+            border: 2px dashed #ddd;
+            transition: border-color 0.2s;
+        }
+        #beautify-screen .icon-preview-label:hover .icon-preview {
+            border-color: var(--primary-color);
         }
         #beautify-screen .icon-details {
             flex-grow: 1;
@@ -985,18 +1043,9 @@
             margin: 0 0 8px 0;
             font-weight: 600;
         }
-        #beautify-screen .icon-details input {
-            width: calc(100% - 70px);
-        }
-        #beautify-screen .reset-icon-btn {
-            background: #e0e0e0;
-            color: #555;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 10px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-left: 10px;
+        #beautify-screen .icon-details .description {
+            font-size: 13px;
+            color: #888;
         }
         .beautify-section {
         margin-top: 30px;
@@ -1424,8 +1473,9 @@
         #chat-list-screen .content {
              padding: 0;
         }
-         #chat-tab-content, #contacts-tab-content {
+         #chat-tab-content, #contacts-tab-content, #discover-tab-content {
             padding: 0;
+            background-color: #f0f2f5;
         }
         .settings-list-item {
             display: flex;
@@ -1449,6 +1499,16 @@
         }
         #assign-char-modal .list-item, #assign-me-modal .list-item {
             padding: 15px;
+        }
+        #discover-tab-content .list-item {
+            background-color: white;
+            margin-top: 8px;
+            padding: 15px 20px;
+            border-bottom: none;
+        }
+         #discover-tab-content .list-item .item-name {
+            font-size: 16px;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -1534,7 +1594,7 @@ async function compressImage(file, options = {}) {
         };
     });
 }
-function adjustColor(hex, percent) {
+function adjustColor(hex, percent, alpha = 1) {
         let r = parseInt(hex.slice(1, 3), 16),
             g = parseInt(hex.slice(3, 5), 16),
             b = parseInt(hex.slice(5, 7), 16);
@@ -1542,18 +1602,22 @@ function adjustColor(hex, percent) {
         r = Math.round(Math.min(255, r * factor));
         g = Math.round(Math.min(255, g * factor));
         b = Math.round(Math.min(255, b * factor));
+        
+        if (alpha < 1) {
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
 // --- Initial HTML Injection ---
 function injectHTML() {
     // Inject complex HTML structures once on load to keep the body clean.
-    const settingsIconSVG = `<svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69-.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>`;
+    const settingsIconSVG = `<svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61-.25-1.17-.59-1.69-.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59-1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>`;
 
     const htmlMap = {
         'chat-list-screen': `
             <header class="app-header" id="qq-app-header">
                 <button class="back-btn" data-target="home-screen">‹</button>
-                <div class="title-container"><h1 class="title" id="qq-app-title">QQ</h1></div>
+                <div class="title-container"><h1 class="title" id="qq-app-title">微信</h1></div>
                 <div class="action-btn-group" id="qq-app-actions"></div>
             </header>
             <main class="content" style="padding: 0; overflow: hidden;">
@@ -1564,8 +1628,13 @@ function injectHTML() {
                 <div id="contacts-tab-content" class="qq-tab-content" style="display: none; height: 100%;">
                     <ul class="list-container" id="contacts-list-container"></ul>
                 </div>
-                <div id="discover-tab-content" class="qq-tab-content" style="display: none; padding: 20px;">
-                     <div class="placeholder-text"><p>发现功能正在建设中...</p></div>
+                <div id="discover-tab-content" class="qq-tab-content" style="display: none;">
+                     <ul class="list-container" id="discover-list" style="margin-top: 15px;">
+                      <li class="list-item" data-target="moments-screen">
+                        <div class="item-details" style="margin-left: 10px;"><div class="item-name">朋友圈</div></div>
+                        <span class="arrow" style="font-size: 20px; color: #ccc;">></span>
+                      </li>
+                    </ul>
                 </div>
                 <div id="me-tab-content" class="qq-tab-content" style="display: none; padding: 20px;"></div>
             </main>
@@ -1575,12 +1644,19 @@ function injectHTML() {
                 <button class="qq-nav-btn" data-tab="discover"><svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.6 20 4 16.4 4 12S7.6 4 12 4 20 7.6 20 12 16.4 20 12 20M12.5 15.6L9.4 12.5L12.5 9.4L11.4 8.3L8.3 11.4L11.4 14.5L12.5 15.6M15.7 11.4L14.6 12.5L11.5 9.4L12.6 8.3L15.7 11.4Z"></path></svg><span>发现</span></button>
                 <button class="qq-nav-btn" data-tab="me"><svg viewBox="0 0 24 24"><path d="M12 4C14.21 4 16 5.79 16 8S14.21 12 12 12 8 10.21 8 8 9.79 4 12 4M12 14C16.42 14 20 15.79 20 18V20H4V18C4 15.79 7.58 14 12 14Z"></path></svg><span>我</span></button>
             </footer>`,
-        'chat-room-screen': `<header class="app-header" id="chat-room-header-default"><button class="back-btn" data-target="chat-list-screen">‹</button><div class="title-container"><h1 class="title" id="chat-room-title">...</h1><div class="subtitle" id="chat-room-subtitle"><div class="online-indicator"></div><span id="chat-room-status-text">在线</span></div></div><button class="action-btn" id="chat-settings-btn">${settingsIconSVG}</button></header><header class="app-header" id="chat-room-header-select" style="display: none;"><button class="action-btn" id="cancel-multi-select-btn">取消</button><div class="title-container"><h1 class="title" id="multi-select-title">选择消息</h1></div><div class="placeholder"></div></header><main class="content"><div class="message-area" id="message-area"></div><div class="typing-indicator" id="typing-indicator"></div></main><div class="chat-input-wrapper"><div id="reply-preview-bar" class="reply-preview-bar"></div><div class="message-input-area" id="message-input-default"><button id="plus-menu-btn" class="icon-btn"><svg viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg></button><input type="text" id="message-input" placeholder="输入消息..."><button id="sticker-toggle-btn" class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button><button id="send-ai-btn" class="icon-btn"></button></div><div class="message-input-area" id="message-edit-bar" style="display: none;"><input type="text" id="message-edit-input"><button id="save-edit-btn" class="icon-btn send-btn">✓</button><button id="cancel-edit-btn" class="icon-btn" style="background-color: #aaa;">✗</button></div><div id="chat-plus-menu" class="chat-plus-menu"><div class="plus-menu-grid"></div></div></div><div id="multi-select-bar"><span id="select-count">已选择 0 项</span><button class="btn btn-danger" id="delete-selected-btn" style="width: auto; padding: 8px 16px;">删除已选</button></div><div id="sticker-modal"><div class="header"><span>我的表情</span><button class="btn btn-primary btn-small" id="add-new-sticker-btn">添加新表情</button></div><div class="sticker-grid" id="sticker-grid-container"></div></div>`,
+        'chat-room-screen': `<header class="app-header" id="chat-room-header-default"><button class="back-btn" data-target="chat-list-screen">‹</button><div class="title-container"><h1 class="title" id="chat-room-title">...</h1><div class="subtitle" id="chat-room-subtitle"><div class="online-indicator"></div><span id="chat-room-status-text">在线</span></div></div><button class="action-btn" id="chat-settings-btn">${settingsIconSVG}</button></header><header class="app-header" id="chat-room-header-select" style="display: none;"><button class="action-btn" id="cancel-multi-select-btn">取消</button><div class="title-container"><h1 class="title" id="multi-select-title">选择消息</h1></div><div class="placeholder"></div></header><main class="content"><div class="message-area" id="message-area"></div><div class="typing-indicator" id="typing-indicator"></div></main><div class="chat-input-wrapper"><div id="reply-preview-bar" class="reply-preview-bar"></div><div class="message-input-area" id="message-input-default"><button id="plus-menu-btn" class="icon-btn"><svg viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg></button><input type="text" id="message-input" placeholder="输入消息..."><button id="sticker-toggle-btn" class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button><button id="send-ai-btn" class="icon-btn"></button></div><div class="message-input-area" id="message-edit-bar" style="display: none;"><input type="text" id="message-edit-input"><button id="save-edit-btn" class="icon-btn send-btn">✓</button><button id="cancel-edit-btn" class="icon-btn" style="background-color: #aaa;">✗</button></div><div id="chat-plus-menu" class="chat-plus-menu"><div class="plus-menu-grid"></div></div></div><div id="multi-select-bar"><span id="select-count">已选择 0 项</span><button class="btn btn-danger" id="delete-selected-btn" style="width: auto; padding: 8px 16px;">删除</button></div><div id="sticker-modal"><div class="header"><span>我的表情</span><button class="btn btn-primary btn-small" id="add-new-sticker-btn">添加新表情</button></div><div class="sticker-grid" id="sticker-grid-container"></div></div>`,
         'world-book-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">世界书</h1></div><button class="action-btn" id="add-world-book-btn">+</button></header><main class="content"><ul class="list-container" id="world-book-list-container"></ul><div class="placeholder-text" id="no-world-books-placeholder" style="display: none;"><p>你的世界一片混沌...</p><p>点击右上角的"+"创造第一个设定吧！</p></div></main>`,
         'edit-world-book-screen': `<header class="app-header"><button class="back-btn" data-target="world-book-screen">‹</button><div class="title-container"><h1 class="title" id="edit-world-book-title">创建/编辑条目</h1></div><div class="placeholder"></div></header><main class="content"><form id="edit-world-book-form"><input type="hidden" id="world-book-id"><div class="form-group"><label for="world-book-name">条目名称</label><input type="text" id="world-book-name" placeholder="例如：世界观背景、魔法体系" required></div><div class="form-group"><label for="world-book-content">条目内容</label><textarea id="world-book-content" rows="8" placeholder="详细描述此项设定..." required></textarea></div><div class="form-group"><label>注入位置</label><div class="form-group radio-group"><label><input type="radio" name="world-book-position" value="before" checked> 前</label><label><input type="radio" name="world-book-position" value="after"> 后</label></div></div><button type="submit" class="btn btn-primary">保存条目</button></form></main>`,
-        'moments-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">朋友圈</h1></div><div class="action-btn-group"><button class="action-btn" id="create-moment-btn"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--primary-color);"><path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7Z" /></svg></button><button class="action-btn" id="moments-settings-btn">${settingsIconSVG}</button></div></header><main class="content"><div id="moments-list-wrapper"></div><div class="placeholder-text" id="no-moments-placeholder" style="display: none;"><p>朋友圈空空如也~</p><p>点击右上角相机发布第一条动态吧！</p></div></main>`,
+        'moments-screen': `<header class="app-header"><button class="back-btn" data-target="chat-list-screen" id="moments-back-btn">‹</button><div class="title-container"><h1 class="title">朋友圈</h1></div><div class="action-btn-group"><button class="action-btn" id="create-moment-btn"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--primary-color);"><path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7Z" /></svg></button><button class="action-btn" id="moments-settings-btn">${settingsIconSVG}</button></div></header><main class="content"><div id="moments-list-wrapper"></div><div class="placeholder-text" id="no-moments-placeholder" style="display: none;"><p>朋友圈空空如也~</p><p>点击右上角相机发布第一条动态吧！</p></div></main>`,
         'moments-settings-screen': `<header class="app-header"><button class="back-btn" data-target="moments-screen">‹</button><div class="title-container"><h1 class="title">朋友圈设置</h1></div><div class="placeholder"></div></header><main class="content"><div class="form-group"><label>我的朋友圈头像</label><div class="avatar-setting" style="justify-content: center;"><img src="" alt="我的头像" id="moments-my-avatar-preview" class="avatar-preview" style="width:80px;height:80px;border-radius:12px;"><input type="file" id="moments-avatar-upload" accept="image/*" style="display:none;"><label for="moments-avatar-upload" class="btn btn-secondary" style="flex-grow:1; margin-left:15px; margin-bottom:0;">更换头像</label></div></div><hr><div class="form-group"><label>朋友圈封面</label><div class="wallpaper-preview" id="moments-bg-preview" style="height:150px; margin-bottom:10px;"></div><input type="file" id="moments-bg-upload" accept="image/*" style="display:none;"><label for="moments-bg-upload" class="btn btn-primary">更换封面</label></div><hr><form id="moments-settings-form"><div class="form-group"><label>AI自动发布动态</label><div class="form-group radio-group"><label><input type="radio" name="moments-enabled" value="true"> 开启</label><label><input type="radio" name="moments-enabled" value="false"> 关闭</label></div></div><div class="form-group"><label for="moments-frequency">发布频率</label><select id="moments-frequency" name="frequency"><option value="high">高 (1-2小时/条)</option><option value="medium">中 (4-8小时/条)</option><option value="low">低 (12-24小时/条)</option></select></div><button type="submit" class="btn btn-primary">保存设置</button></form><hr style="border:none; border-top:1px solid #eee; margin: 20px 0;"><button type="button" class="btn btn-danger" id="clear-moments-btn">清空所有动态</button></main>`,
-        'api-settings-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">API 设置</h1></div><div class="placeholder"></div></header><main class="content"><form id="api-form"><div class="form-group"><label for="api-provider">API 服务商</label><select id="api-provider" name="provider"><option value="newapi">NewAPI (自定义)</option><option value="deepseek">DeepSeek</option><option value="claude">Claude</option><option value="gemini">Gemini</option></select></div><div class="form-group"><label for="api-url">API 地址（后缀不用添加/v1）</label><input type="url" id="api-url" name="url" placeholder="选择服务商可自动填写" required></div><div class="form-group"><label for="api-key">密钥 (Key)</label><input type="password" id="api-key" name="key" placeholder="请输入你的API密钥" required></div><button type="button" class="btn btn-secondary" id="fetch-models-btn"><span class="btn-text">点击拉取模型</span><div class="spinner"></div></button><div class="form-group"><label for="api-model">选择模型</label><select id="api-model" name="model" required><option value="">请先拉取模型列表</option></select></div><button type="submit" class="btn btn-primary" id="save-btn"><span class="btn-text">保 存</span><div class="spinner"></div></button></form></main>`,
+        'api-settings-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">API 设置</h1></div><div class="placeholder"></div></header><main class="content"><form id="api-form">
+        <h3>聊天模型 API</h3>
+        <div class="form-group"><label for="api-provider">API 服务商</label><select id="api-provider" name="provider"><option value="newapi">NewAPI (自定义)</option><option value="deepseek">DeepSeek</option><option value="claude">Claude</option><option value="gemini">Gemini</option></select></div><div class="form-group"><label for="api-url">API 地址（后缀不用添加/v1）</label><input type="url" id="api-url" name="url" placeholder="选择服务商可自动填写" required></div><div class="form-group"><label for="api-key">密钥 (Key)</label><input type="password" id="api-key" name="key" placeholder="请输入你的API密钥" required></div><button type="button" class="btn btn-secondary" id="fetch-models-btn"><span class="btn-text">点击拉取模型</span><div class="spinner"></div></button><div class="form-group"><label for="api-model">选择模型</label><select id="api-model" name="model" required><option value="">请先拉取模型列表</option></select></div>
+        <hr style="margin: 30px 0;">
+        <h3>图像生成 API (可选，用于朋友圈)</h3>
+        <p style="font-size: 13px; color: #888; margin-top: -15px;">用于AI自动发朋友圈时生成配图，需兼容OpenAI DALL-E API格式。</p>
+        <div class="form-group"><label for="image-api-url">API 地址</label><input type="url" id="image-api-url" name="image_url" placeholder="例如: https://api.openai.com" ></div><div class="form-group"><label for="image-api-key">密钥 (Key)</label><input type="password" id="image-api-key" name="image_key" placeholder="请输入你的图像API密钥" ></div><div class="form-group"><label for="image-api-model">选择模型</label><input type="text" id="image-api-model" name="image_model" placeholder="例如: dall-e-3"></div>
+        <button type="submit" class="btn btn-primary" id="save-btn"><span class="btn-text">保 存</span><div class="spinner"></div></button></form></main>`,
         'beautify-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">美化</h1></div><div class="placeholder"></div></header><main class="content">
         <h3 style="text-align:center; color: var(--primary-color); margin-top:0;">更换壁纸</h3>
         <div class="wallpaper-preview" id="wallpaper-preview"><span>当前壁纸预览</span></div>
@@ -1647,15 +1723,18 @@ function injectHTML() {
                 </button>
             </div>
             <div class="form-group"><label for="font-size-slider-private">聊天字体大小 <span id="font-size-value-private">15px</span></label><input type="range" id="font-size-slider-private" min="12" max="20" step="1" value="15" style="width: 100%; margin-top: 8px;"></div>
-            <div class="form-group"><label for="custom-css-input-private">自定义气泡样式 (CSS)<button id="reset-custom-css-btn-private" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button></label><textarea id="custom-css-input-private" rows="8" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="美化指南：为气泡添加装饰，而非覆盖颜色。
+            <div class="form-group"><label for="custom-css-input-private">自定义气泡样式 (CSS)<button id="reset-custom-css-btn-private" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button></label><textarea id="custom-css-input-private" rows="8" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="美化指南: 为气泡添加装饰，而非覆盖颜色。
+选择器规则:
+- 我方气泡: .message-bubble.user .content
+- 对方气泡: .message-bubble.ai .content
+- 通用气泡: .message-bubble .content
 
 /* 示例1: 细腻磨砂质感 */
-.message-bubble.user .content,
-.message-bubble.ai .content {
+.message-bubble .content {
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.2);
   background: rgba(255,255,255,0.3);
-  color: #333;
+  color: #333; /* 需自己适配颜色 */
 }
 /* 示例2: 我的气泡加高光 */
 .message-bubble.user .content::before {
@@ -1695,13 +1774,17 @@ function injectHTML() {
             </button>
         </div>
         <div class="form-group"><label for="font-size-slider-group">聊天字体大小 <span id="font-size-value-group">15px</span></label><input type="range" id="font-size-slider-group" min="12" max="20" step="1" value="15" style="width: 100%; margin-top: 8px;"></div>
-        <div class="form-group"><label for="custom-css-input-group">自定义气泡样式 (CSS)<button id="reset-custom-css-btn-group" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button></label><textarea id="custom-css-input-group" rows="8" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="美化指南：可为用户或AI气泡添加通用装饰。
+        <div class="form-group"><label for="custom-css-input-group">自定义气泡样式 (CSS)<button id="reset-custom-css-btn-group" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button></label><textarea id="custom-css-input-group" rows="8" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="美化指南: 为气泡添加装饰，而非覆盖颜色。
+选择器规则:
+- 我方气泡: .message-bubble.user .content
+- 对方气泡: .message-bubble.ai .content 或 .message-bubble:not(.user) .content
+- 通用气泡: .message-bubble .content
 
-/* 示例: 给所有收到的气泡加阴影 */
+/* 示例1: 给所有收到的气泡加阴影 */
 .message-bubble.ai {
   box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
 }
-/* 示例: 让我的气泡字体变色 */
+/* 示例2: 让我的气泡字体变色(需适配主题) */
 .message-bubble.user .content {
   color: white; 
   text-shadow: 1px 1px 1px #000;
@@ -1741,14 +1824,13 @@ const colorThemesV2 = {
 };
 
 const defaultIcons = {
-    'chat-list-screen': { name: 'QQ', url: 'https://i.postimg.cc/VvQB8dQT/chan-143.png' },
-    'api-settings-screen': { name: 'api', url: 'https://i.postimg.cc/50FqT8GL/chan-125.png' },
-    'world-book-screen': { name: '世界书', url: 'https://i.postimg.cc/prCWkrKT/chan-74.png' },
-    'moments-screen': { name: '朋友圈', url: 'https://i.postimg.cc/y8wKqK4x/chan-112.png'},
-    'beautify-screen': { name: '美化', url: 'https://i.postimg.cc/vZVdC7gt/chan-133.png' },
-    'memory-core-screen': { name: '记忆核心', url: 'https://i.postimg.cc/P5t3Qc2b/moments-2.png' },
-    'day-mode-btn': { name: '', url: 'https://i.postimg.cc/Jz0tYqnT/chan-145.png' },
-    'night-mode-btn': { name: '', url: 'https://i.postimg.cc/htYvkdQK/chan-146.png' }
+    'chat-list-screen': { name: '微信', url: 'https://i.postimg.cc/jdG3tLF6/IMG-20250804-223602.jpg' },
+    'api-settings-screen': { name: 'API', url: 'https://i.postimg.cc/HkXZxdqq/IMG-20250804-223720.jpg' },
+    'world-book-screen': { name: '世界书', url: 'https://i.postimg.cc/jjhMHvdv/IMG-20250804-223631.jpg' },
+    'beautify-screen': { name: '美化', url: 'https://i.postimg.cc/bvP6S48s/IMG-20250804-223654.jpg' },
+    'memory-core-screen': { name: '记忆核心', url: 'https://i.postimg.cc/1t5JJ68S/IMG-20250804-223742.jpg' },
+    'day-mode-btn': { name: '', url: 'https://i.postimg.cc/85Kw35v6/IMG-20250804-223821.jpg' },
+    'night-mode-btn': { name: '', url: 'https://i.postimg.cc/qqNQdTcZ/IMG-20250804-223857.jpg' }
 };
 
 const ICONS = {
@@ -1784,9 +1866,10 @@ const loadData = () => {
              { id: 'me_default', myName: '我', myPersona: '', myAvatar: 'https://i.postimg.cc/GtbTnxhP/o-o-1.jpg' }
         ],
         groups: [],
-        apiSettings: {},
+        apiSettings: { url: '', key: '', model: '', provider: 'newapi' },
+        imageApiSettings: { url: '', key: '', model: '' },
         themeColor: '#ff80ab',
-        wallpaper: 'https://i.postimg.cc/W4Z9R9x4/ins-1.jpg',
+        wallpaper: 'https://i.postimg.cc/RZhtsRRX/IMG-20250804-223935.jpg',
         myStickers: [],
         homeScreenMode: 'night',
         worldBooks: [],
@@ -1911,6 +1994,7 @@ const loadData = () => {
             assignedCharId: c.assignedCharId || c.id,
             assignedMeId: c.assignedMeId || 'me_default',
             customBubbleCss: c.customBubbleCss || '',
+            chatBg: c.chatBg || 'https://i.postimg.cc/fTBXfFxV/IMG-20250804-223944.jpg',
             lastMomentPostTime: c.lastMomentPostTime || 0 // New property
         });
     });
@@ -2022,6 +2106,15 @@ const init = () => {
         if (e.target.closest('.context-menu')) { e.stopPropagation(); return; }
         removeContextMenu();
 
+        const chatSettingsSidebar = getEl('chat-settings-sidebar');
+        if (chatSettingsSidebar.classList.contains('open') && !e.target.closest('#chat-settings-sidebar') && !e.target.closest('#chat-settings-btn')) {
+            chatSettingsSidebar.classList.remove('open');
+        }
+        const groupSettingsSidebar = getEl('group-settings-sidebar');
+        if (groupSettingsSidebar.classList.contains('open') && !e.target.closest('#group-settings-sidebar') && !e.target.closest('#chat-settings-btn')) {
+            groupSettingsSidebar.classList.remove('open');
+        }
+
         if (!e.target.closest('.moment-item-actions')) {
             document.querySelectorAll('.moment-action-popup.visible').forEach(popup => {
                 popup.classList.remove('visible');
@@ -2034,10 +2127,16 @@ const init = () => {
         if (backBtn) { 
              e.preventDefault(); 
              const target = backBtn.getAttribute('data-target');
-             switchScreen(target); 
-             if(target === 'chat-list-screen') {
+             if(target === 'chat-list-screen' && getEl('moments-screen').classList.contains('active')){
+                // Special case for returning from moments screen to discover tab
+                switchScreen('chat-list-screen');
+                document.querySelector('.qq-nav-btn[data-tab="discover"]').click();
+             } else if (target === 'chat-list-screen') {
+                 switchScreen(target);
                  renderChatList();
                  renderContactsList();
+             } else {
+                switchScreen(target);
              }
         }
         const plusMenu = getEl('chat-plus-menu');
@@ -2052,7 +2151,7 @@ const init = () => {
     });
     
     setInterval(updateClock, 30000);
-    setInterval(proactiveChatScheduler, 5 * 60 * 1000); 
+    setInterval(proactiveChatScheduler, 1 * 60 * 1000); 
     setInterval(momentPruningScheduler, 60 * 60 * 1000); 
     setInterval(interAiReactionScheduler, 10 * 60 * 1000); 
 
@@ -2100,7 +2199,7 @@ function setupHomeScreen() {
         <div class="time-widget"><div class="time" id="time-display"></div><div class="date" id="date-display"></div></div>
         <div class="home-layout">
             <div class="home-layout-left">
-                 <a href="#" class="app-icon app-icon-large" data-target="chat-list-screen"><img src="${getIcon('chat-list-screen')}" alt="QQ" class="icon-img"><span class="app-name">${defaultIcons['chat-list-screen'].name}</span></a>
+                 <a href="#" class="app-icon app-icon-large" data-target="chat-list-screen"><img src="${getIcon('chat-list-screen')}" alt="微信" class="icon-img"><span class="app-name">${defaultIcons['chat-list-screen'].name}</span></a>
             </div>
             <div class="home-layout-right">
                 <a href="#" class="app-icon" data-target="world-book-screen"><img src="${getIcon('world-book-screen')}" alt="World Book" class="icon-img"><span class="app-name">${defaultIcons['world-book-screen'].name}</span></a>
@@ -2111,7 +2210,6 @@ function setupHomeScreen() {
         </div>
         <div class="dock">
             <a href="#" class="app-icon" id="day-mode-btn"><img src="${getIcon('day-mode-btn')}" alt="日间" class="icon-img"></a>
-            <a href="#" class="app-icon" data-target="moments-screen"><img src="${getIcon('moments-screen')}" alt="朋友圈" class="icon-img"></a>
             <a href="#" class="app-icon" id="night-mode-btn"><img src="${getIcon('night-mode-btn')}" alt="夜间" class="icon-img"></a>
         </div>`;
     getEl('home-screen').innerHTML = homeScreenHTML;
@@ -2124,7 +2222,6 @@ function setupHomeScreen() {
     document.getElementById('night-mode-btn')?.addEventListener('click', (e) => { e.preventDefault(); applyHomeScreenMode('night'); });
     document.querySelector('[data-target="world-book-screen"]').addEventListener('click', () => renderWorldBookList());
     document.querySelector('[data-target="beautify-screen"]').addEventListener('click', () => renderCustomizeForm());
-    document.querySelector('[data-target="moments-screen"]').addEventListener('click', () => renderMomentsFeed());
     document.querySelector('[data-target="memory-core-screen"]').addEventListener('click', () => renderMemoryCoreList());
 }
     
@@ -2132,74 +2229,75 @@ function applyWallpaper(url) { getEl('home-screen').style.backgroundImage = `url
 function applyHomeScreenMode(mode) { getEl('home-screen').classList.toggle('day-mode', mode === 'day'); db.homeScreenMode = mode; saveData(); }
 
 function setupBeautifyApp() {
-        const screen = getEl('beautify-screen');
+    const screen = getEl('beautify-screen');
 
-        const colorPicker = getEl('theme-color-picker');
-        if (colorPicker) {
-            colorPicker.value = db.themeColor || '#ff80ab';
+    const colorPicker = getEl('theme-color-picker');
+    if (colorPicker) {
+        colorPicker.value = db.themeColor || '#ff80ab';
+    }
+    
+    getEl('font-url-beautify').value = db.fontUrl || '';
+
+    screen.addEventListener('input', e => {
+        if (e.target.id === 'theme-color-picker') {
+            const newColor = e.target.value;
+            applyThemeColor(newColor);
+            db.themeColor = newColor;
+            saveData();
         }
-        
-        getEl('font-url-beautify').value = db.fontUrl || '';
+    });
 
-        screen.addEventListener('input', e => {
-            if (e.target.id === 'theme-color-picker') {
-                const newColor = e.target.value;
-                applyThemeColor(newColor);
-                db.themeColor = newColor;
-                saveData();
+    screen.addEventListener('change', async (event) => {
+        if (event.target.id === 'wallpaper-upload') {
+            const file = event.target.files[0];
+            if (file) {
+                try {
+                    const compressedUrl = await compressImage(file, { quality: 0.85, maxWidth: 1080, maxHeight: 1920 });
+                    db.wallpaper = compressedUrl;
+                    applyWallpaper(compressedUrl);
+                    getEl('wallpaper-preview').style.backgroundImage = `url(${compressedUrl})`;
+                    saveData();
+                    showToast('壁纸更换成功！');
+                } catch (error) { showToast('壁纸压缩失败，请重试'); }
             }
-            if (e.target.matches('input[type="url"]') && e.target.dataset.id) {
-                const iconId = e.target.dataset.id;
-                const newUrl = e.target.value.trim();
-                db.customIcons[iconId] = newUrl;
-                getEl(`icon-preview-${iconId}`).src = newUrl || defaultIcons[iconId].url;
-                saveData();
-                setupHomeScreen();
-            }
-        });
-
-        screen.addEventListener('change', async (event) => {
-            if (event.target.id === 'wallpaper-upload') {
-                const file = event.target.files[0];
-                if (file) {
-                    try {
-                        const compressedUrl = await compressImage(file, { quality: 0.85, maxWidth: 1080, maxHeight: 1920 });
-                        db.wallpaper = compressedUrl;
-                        applyWallpaper(compressedUrl);
-                        getEl('wallpaper-preview').style.backgroundImage = `url(${compressedUrl})`;
-                        saveData();
-                        showToast('壁纸更换成功！');
-                    } catch (error) { showToast('壁纸压缩失败，请重试'); }
+        }
+        if (event.target.matches('input[type="file"][data-id]')) {
+            const file = event.target.files[0];
+            const iconId = event.target.dataset.id;
+            if (file && iconId) {
+                try {
+                    const compressedUrl = await compressImage(file, { quality: 0.8, maxWidth: 200, maxHeight: 200 });
+                    db.customIcons[iconId] = compressedUrl;
+                    saveData();
+                    showToast(`图标 "${defaultIcons[iconId].name || '模式切换图标'}" 已更新！`);
+                    renderCustomizeForm();
+                    setupHomeScreen();
+                } catch (error) {
+                    showToast('图标压缩失败，请重试');
                 }
             }
-        });
+        }
+    });
 
-        screen.addEventListener('click', e => {
-            if (e.target.matches('.reset-icon-btn')) {
-                const iconId = e.target.dataset.id;
-                delete db.customIcons[iconId];
-                saveData();
-                renderCustomizeForm();
-                setupHomeScreen();
-                showToast('图标已重置');
-            }
-            if (e.target.id === 'restore-default-font-btn-beautify') {
-                getEl('font-url-beautify').value = '';
-                db.fontUrl = '';
-                saveData();
-                applyGlobalFont('');
-                showToast('已恢复默认字体！');
-            }
-        });
-
-        getEl('font-settings-form-beautify').addEventListener('submit', e => {
-            e.preventDefault();
-            db.fontUrl = getEl('font-url-beautify').value.trim();
+    screen.addEventListener('click', e => {
+        if (e.target.id === 'restore-default-font-btn-beautify') {
+            getEl('font-url-beautify').value = '';
+            db.fontUrl = '';
             saveData();
-            applyGlobalFont(db.fontUrl);
-            showToast('新字体已应用！');
-        });
-    }
+            applyGlobalFont('');
+            showToast('已恢复默认字体！');
+        }
+    });
+
+    getEl('font-settings-form-beautify').addEventListener('submit', e => {
+        e.preventDefault();
+        db.fontUrl = getEl('font-url-beautify').value.trim();
+        saveData();
+        applyGlobalFont(db.fontUrl);
+        showToast('新字体已应用！');
+    });
+}
+
 function applyThemeColor(hexColor) {
         if (!hexColor) return;
         const root = document.documentElement;
@@ -2215,6 +2313,7 @@ function applyThemeColor(hexColor) {
         root.style.setProperty('--bg-color', `rgba(${r}, ${g}, ${b}, 0.05)`);
         root.style.setProperty('--top-pinned-bg', `rgba(${r}, ${g}, ${b}, 0.1)`);
     }
+
 function renderCustomizeForm() {
     const form = getEl('customize-form');
     form.innerHTML = '';
@@ -2224,20 +2323,22 @@ function renderCustomizeForm() {
     Object.entries(defaultIcons).forEach(([id, { name, url }]) => {
         const currentIcon = db.customIcons[id] || url;
         form.insertAdjacentHTML('beforeend', `
-            <div class="icon-custom-item" id="custom-item-${id}">
-                <img src="${currentIcon}" alt="${name}" class="icon-preview" id="icon-preview-${id}">
+            <div class="icon-custom-item">
+                <input type="file" id="icon-upload-${id}" data-id="${id}" accept="image/*" style="display: none;">
+                <label for="icon-upload-${id}" class="icon-preview-label">
+                    <img src="${currentIcon}" alt="${name}" class="icon-preview" id="icon-preview-${id}">
+                </label>
                 <div class="icon-details">
-                    <p>${name || '模式切换'}</p>
-                    <input type="url" class="form-group" placeholder="粘贴新的图标URL" value="${db.customIcons[id] || ''}" data-id="${id}">
+                    <p>${name || '模式切换图标'}</p>
+                    <div class="description">点击左侧图标可从本地更换</div>
                 </div>
-                <button type="button" class="reset-icon-btn" data-id="${id}">重置</button>
             </div>`);
     });
 }
     
 function setupTutorialApp() { getEl('tutorial-screen').addEventListener('click', (e) => { const header = e.target.closest('.tutorial-header'); if (header) header.parentElement.classList.toggle('open'); }); }
 function renderTutorialContent() {
-    const tutorials = [ { title: '写在前面', imageUrls: ['https://i.postimg.cc/7PgyMG9S/image.jpg'] }, { title: '软件介绍', imageUrls: [ 'https://i.postimg.cc/VvsJRh6q/IMG-20250713-162647.jpg', 'https://i.postimg.cc/8P5FfxxD/IMG-20250713-162702.jpg', 'https://i.postimg.cc/3r94R3Sn/IMG-20250713-162712.jpg' ] }, { title: 'QQ', imageUrls: [ 'https://i.postimg.cc/x8scFPJW/IMG-20250713-162756.jpg', 'https://i.postimg.cc/pX6mfqtj/IMG-20250713-162809.jpg', 'https://i.postimg.cc/YScjV00q/IMG-20250713-162819.jpg', 'https://i.postimg.cc/13VfJw9j/IMG-20250713-162828.jpg' ] }, { title: 'QQ-群聊', imageUrls: ['https://i.postimg.cc/X7LSmRTJ/404.jpg'] } ];
+    const tutorials = [ { title: '写在前面', imageUrls: ['https://i.postimg.cc/7PgyMG9S/image.jpg'] }, { title: '软件介绍', imageUrls: [ 'https://i.postimg.cc/VvsJRh6q/IMG-20250713-162647.jpg', 'https://i.postimg.cc/8P5FfxxD/IMG-20250713-162702.jpg', 'https://i.postimg.cc/3r94R3Sn/IMG-20250713-162712.jpg' ] }, { title: '微信', imageUrls: [ 'https://i.postimg.cc/x8scFPJW/IMG-20250713-162756.jpg', 'https://i.postimg.cc/pX6mfqtj/IMG-20250713-162809.jpg', 'https://i.postimg.cc/YScjV00q/IMG-20250713-162819.jpg', 'https://i.postimg.cc/13VfJw9j/IMG-20250713-162828.jpg' ] }, { title: '微信-群聊', imageUrls: ['https://i.postimg.cc/X7LSmRTJ/404.jpg'] } ];
     const container = getEl('tutorial-content-area');
     container.innerHTML = tutorials.map(t => `<div class="tutorial-item"><div class="tutorial-header">${t.title}</div><div class="tutorial-content">${t.imageUrls.map(url => `<img src="${url}" alt="${t.title}教程图片">`).join('')}</div></div>`).join('');
 }
@@ -2300,6 +2401,17 @@ function setupQQApp() {
         const item = e.target.closest('.list-item');
         if(item) handleProfileLongPress(item.dataset.id, 'me', e.clientX, e.clientY);
     });
+    
+    getEl('discover-tab-content').addEventListener('click', e => {
+        const item = e.target.closest('.list-item');
+        if (item) {
+            const target = item.dataset.target;
+            if (target === 'moments-screen') {
+                renderMomentsFeed();
+                switchScreen(target);
+            }
+        }
+    });
 
     updateQQHeader('chat');
     renderChatList();
@@ -2356,7 +2468,7 @@ function updateQQHeader(activeTab) {
         case 'chat':
             titleEl.textContent = '微信';
             actionsEl.innerHTML = `
-                <button class="action-btn" id="qq-action-create-group" style="background: none; color: var(--text-color); font-size: 24px;">⊕</button>
+                <button class="action-btn" id="qq-action-create-group"><img src="https://i.postimg.cc/t4c0r980/IMG-20250803-153408.jpg" alt="创建群聊"></button>
                 <button class="action-btn" id="qq-action-add-chat" style="font-size: 24px;">+</button>
             `;
             break;
@@ -2444,11 +2556,12 @@ function renderChatList() {
                  if(lastMsg.isRetracted) {
                     lastMessageText = lastMsg.role === 'user' ? '你撤回了一条消息' : `${lastMsg.senderName || '对方'}撤回了一条消息`;
                 }
-                else if (/送来的礼物/.test(content)) lastMessageText = '[礼物]';
-                else if (/表情包/.test(content)) lastMessageText = '[表情包]';
-                else if (/的语音/.test(content)) lastMessageText = '[语音]';
-                else if (/照片\/视频/.test(content)) lastMessageText = '[照片/视频]';
-                else if (/转账|红包/.test(content)) lastMessageText = '[红包]';
+                else if (/\[.*?送来的礼物：.*?\]/.test(content)) lastMessageText = '[礼物]';
+                else if (/\[.*?的表情包：.*?\]/.test(content)) lastMessageText = '[表情包]';
+                else if (/\[.*?的语音：.*?\]/.test(content)) lastMessageText = '[语音]';
+                else if (/\[.*?发来的照片\/视频：.*?\]/.test(content)) lastMessageText = '[照片/视频]';
+                else if (/\[.*?给你转账：.*?\]/.test(content)) lastMessageText = '[转账]';
+                else if (/\[.*?的红包：.*?\]/.test(content)) lastMessageText = '[红包]';
                 else {
                     const textMatch = content.match(/\[(?:我在回复“.*?”时说|.*的消息)：([\s\S]+?)\]/);
                     let text = textMatch ? textMatch[1].trim() : content.trim();
@@ -2511,7 +2624,7 @@ function setupAddCharModal() {
                     theme: 'default', 
                     fontSize: 15, 
                     maxMemory: 10, 
-                    chatBg: '', 
+                    chatBg: 'https://i.postimg.cc/fTBXfFxV/IMG-20250804-223944.jpg', 
                     history: [], 
                     isPinned: false, 
                     status: '在线', 
@@ -2644,12 +2757,28 @@ function setupChatRoom() {
 
     const messageArea = getEl('message-area');
     messageArea.addEventListener('click', (e) => {
-        if (e.target.id === 'load-more-btn') { loadMoreMessages(); return; }
+        const voiceBubble = e.target.closest('.voice-bubble');
+        if (voiceBubble) {
+            const transcript = voiceBubble.closest('.message-content-wrapper').querySelector('.voice-transcript');
+            if (transcript) {
+                transcript.classList.toggle('active');
+            }
+            return;
+        }
+        const giftCard = e.target.closest('.gift-card');
+        if (giftCard && !giftCard.classList.contains('received')) {
+            giftCard.classList.toggle('is-flipped');
+            return;
+        }
+        
         const wrapper = e.target.closest('.message-wrapper');
         if (!wrapper) return;
 
-        if (wrapper.querySelector('.system-notification-bubble[data-original-content]')) {
-            const originalContent = wrapper.querySelector('.system-notification-bubble').dataset.originalContent;
+        if (e.target.id === 'load-more-btn') { loadMoreMessages(); return; }
+
+        const systemBubble = wrapper.querySelector('.system-notification-bubble[data-original-content]');
+        if (systemBubble) {
+            const originalContent = systemBubble.dataset.originalContent;
             const textMatch = originalContent.match(/\[.*?：([\s\S]+?)\]/);
             const textToDisplay = textMatch ? textMatch[1].trim() : originalContent;
             showToast(`撤回内容: ${textToDisplay}`);
@@ -2669,20 +2798,8 @@ function setupChatRoom() {
             return;
         }
         
-        const voiceBubble = e.target.closest('.voice-bubble');
-        if (voiceBubble) {
-            handleVoiceBubbleClick(voiceBubble);
-        }
-        
         const pvCard = e.target.closest('.pv-card');
         if (pvCard) { pvCard.querySelector('.pv-card-image-overlay')?.classList.toggle('hidden'); pvCard.querySelector('.pv-card-footer')?.classList.toggle('hidden'); }
-        
-        const giftCard = e.target.closest('.gift-card');
-        if (giftCard) {
-            if (!giftCard.classList.contains('received')) {
-                giftCard.closest('.message-wrapper').querySelector('.gift-card-description')?.classList.toggle('active');
-            }
-        }
         
         const transferCard = e.target.closest('.transfer-card');
         if (transferCard && !isSent(transferCard)) {
@@ -2694,6 +2811,11 @@ function setupChatRoom() {
         
         const hongbaoCard = e.target.closest('.hongbao-card');
         if (hongbaoCard && !hongbaoCard.classList.contains('claimed')) {
+             if (hongbaoCard.closest('.message-wrapper').classList.contains('sent')) {
+                showToast('不能领取自己的红包');
+                return;
+             }
+
              const messageId = hongbaoCard.closest('.message-wrapper').dataset.id;
              const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
              const message = chat?.history.find(m => m.id === messageId);
@@ -2714,9 +2836,26 @@ function setupChatRoom() {
             return element.closest('.message-wrapper')?.classList.contains('sent');
         }
     });
-
-    messageArea.addEventListener('contextmenu', (e) => { e.preventDefault(); if (isInMultiSelectMode) return; const wrapper = e.target.closest('.message-wrapper'); if (wrapper) handleMessageLongPress(wrapper, e.clientX, e.clientY); });
-    messageArea.addEventListener('touchstart', (e) => { const wrapper = e.target.closest('.message-wrapper'); if (!wrapper) return; longPressTimer = setTimeout(() => { const touch = e.touches[0]; handleMessageLongPress(wrapper, touch.clientX, touch.clientY); }, 400); });
+    
+    messageArea.addEventListener('contextmenu', (e) => { 
+        e.preventDefault(); 
+        if (isInMultiSelectMode) return; 
+        const bubbleRow = e.target.closest('.message-bubble-row'); 
+        if (bubbleRow) {
+            const wrapper = bubbleRow.closest('.message-wrapper');
+            handleMessageLongPress(wrapper, e.clientX, e.clientY); 
+        }
+    });
+    messageArea.addEventListener('touchstart', (e) => { 
+        const bubbleRow = e.target.closest('.message-bubble-row'); 
+        if (!bubbleRow) return;
+        longPressTimer = setTimeout(() => { 
+            const wrapper = bubbleRow.closest('.message-wrapper');
+            const touch = e.touches[0]; 
+            handleMessageLongPress(wrapper, touch.clientX, touch.clientY); 
+        }, 400); 
+    });
+    
     messageArea.addEventListener('touchend', () => clearTimeout(longPressTimer));
     messageArea.addEventListener('touchmove', () => clearTimeout(longPressTimer));
 
@@ -2794,103 +2933,104 @@ function toggleStickerModal(forceState) {
     adjustContentPadding(show);
 }
 
-function renderPlusMenu() {
-    const menuGrid = getEl('chat-plus-menu').querySelector('.plus-menu-grid');
-    const menuItems = [
-        { id: 'photo-video-btn', label: '相册', icon: '<path d="M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19M8.5,13.5L11,16.5L14.5,12L19,18H5L8.5,13.5Z" />' },
-        { id: 'camera-btn', label: '拍摄', icon: '<path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" />' },
-        { id: 'video-call-btn', label: '视频通话', icon: '<path d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z" />' },
-        { id: 'location-btn', label: '位置', icon: '<path d="M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5Z" />' },
-        { id: 'wallet-btn', label: '红包', icon: '<path d="M18,16H16V15A2,2 0 0,0 14,13H10A2,2 0 0,0 8,15V16H6A2,2 0 0,0 4,18V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V18A2,2 0 0,0 18,16M11,10H13V12H11V10M18,6A2,2 0 0,0 16,4H8A2,2 0 0,0 6,6V12H8V8H16V12H18V6Z" />' },
-        { id: 'gift-btn', label: '礼物', icon: '<path d="M20,8L12,13L4,8V6H20M20,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6A2,2 0 0,0 20,4M12.5,18C12.5,17.29 12.17,16.65 11.64,16.27C12.17,15.89 12.5,15.26 12.5,14.55C12.5,13.6 11.83,12.79 11,12.58V12H13V10H11V8H13V6H11V5C11,4.45 10.55,4 10,4H8C7.45,4 7,4.45 7,5V6H9V8H7V10H9V12H7V12.58C6.17,12.79 5.5,13.6 5.5,14.55C5.5,15.26 5.83,15.89 6.36,16.27C5.83,16.65 5.5,17.29 5.5,18H12.5Z" />' },
-        { id: 'transfer-btn', label: '转账', icon: '<path d="M16.13,15.13L18.26,13L16.13,10.88L17.54,9.47L22.07,14L17.54,18.53L16.13,17.12M7.88,9.88L5.75,12L7.88,14.13L6.47,15.54L2,11L6.47,6.47L7.88,7.88M12.25,5C12.6,5 12.92,5.21 13.09,5.54L16.5,12H14.83L12.25,7.03L9.67,12H8L11.41,5.54C11.58,5.21 11.9,5 12.25,5Z" />' },
-        { id: 'voice-message-btn', label: '语音输入', icon: '<path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>' }
-    ];
 
-    menuGrid.innerHTML = menuItems.map(item => `
-        <div class="plus-menu-item" id="${item.id}">
-            <div class="icon-background">
-                <svg viewBox="0 0 24 24">${item.icon}</svg>
+    function renderPlusMenu() {
+        const menuGrid = getEl('chat-plus-menu').querySelector('.plus-menu-grid');
+        const menuItems = [
+            { id: 'photo-video-btn', label: '相册', icon: '<path d="M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19M8.5,13.5L11,16.5L14.5,12L19,18H5L8.5,13.5Z" />' },
+            { id: 'camera-btn', label: '拍摄', icon: '<path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" />' },
+            { id: 'video-call-btn', label: '视频通话', icon: '<path d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z" />' },
+            { id: 'location-btn', label: '位置', icon: '<path d="M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5Z" />' },
+            { id: 'wallet-btn', label: '红包', icon: '<path d="M18,16H16V15A2,2 0 0,0 14,13H10A2,2 0 0,0 8,15V16H6A2,2 0 0,0 4,18V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V18A2,2 0 0,0 18,16M11,10H13V12H11V10M18,6A2,2 0 0,0 16,4H8A2,2 0 0,0 6,6V12H8V8H16V12H18V6Z" />' },
+            { id: 'gift-btn', label: '礼物', icon: '<path d="M20,8L12,13L4,8V6H20M20,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6A2,2 0 0,0 20,4M12.5,18C12.5,17.29 12.17,16.65 11.64,16.27C12.17,15.89 12.5,15.26 12.5,14.55C12.5,13.6 11.83,12.79 11,12.58V12H13V10H11V8H13V6H11V5C11,4.45 10.55,4 10,4H8C7.45,4 7,4.45 7,5V6H9V8H7V10H9V12H7V12.58C6.17,12.79 5.5,13.6 5.5,14.55C5.5,15.26 5.83,15.89 6.36,16.27C5.83,16.65 5.5,17.29 5.5,18H12.5Z" />' },
+            { id: 'transfer-btn', label: '转账', icon: '<path d="M16.13,15.13L18.26,13L16.13,10.88L17.54,9.47L22.07,14L17.54,18.53L16.13,17.12M7.88,9.88L5.75,12L7.88,14.13L6.47,15.54L2,11L6.47,6.47L7.88,7.88M12.25,5C12.6,5 12.92,5.21 13.09,5.54L16.5,12H14.83L12.25,7.03L9.67,12H8L11.41,5.54C11.58,5.21 11.9,5 12.25,5Z" />' },
+            { id: 'voice-message-btn', label: '语音输入', icon: '<path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>' }
+        ];
+
+        menuGrid.innerHTML = menuItems.map(item => `
+            <div class="plus-menu-item" id="${item.id}">
+                <div class="icon-background">
+                    <svg viewBox="0 0 24 24">${item.icon}</svg>
+                </div>
+                <span>${item.label}</span>
             </div>
-            <span>${item.label}</span>
-        </div>
-    `).join('');
+        `).join('');
 
-    menuGrid.addEventListener('click', (e) => {
-        const item = e.target.closest('.plus-menu-item');
-        if (!item) return;
+        menuGrid.addEventListener('click', (e) => {
+            const item = e.target.closest('.plus-menu-item');
+            if (!item) return;
 
-        togglePlusMenu(false); // Close menu on selection
+            togglePlusMenu(false); // Close menu on selection
+            
+            switch (item.id) {
+                case 'photo-video-btn':
+                case 'camera-btn':
+                    getEl('send-pv-form').reset();
+                    getEl('send-pv-modal').classList.add('visible');
+                    break;
+                case 'voice-message-btn':
+                    getEl('send-voice-form').reset();
+                    getEl('voice-duration-preview').textContent = '0"';
+                    getEl('send-voice-modal').classList.add('visible');
+                    break;
+                case 'wallet-btn': // Red packet
+                     openTransferModal(true);
+                     break;
+                case 'transfer-btn': // Transfer
+                     openTransferModal(false);
+                     break;
+                case 'gift-btn':
+                    getEl('send-gift-form').reset();
+                    getEl('send-gift-modal').classList.add('visible');
+                    break;
+                case 'video-call-btn':
+                case 'location-btn':
+                    showToast(`功能“${item.querySelector('span').textContent}”正在开发中...`);
+                    break;
+            }
+        });
+    }
+
+    function handleMessageLongPress(messageWrapper, x, y) {
+        if (isInMultiSelectMode) return;
+        clearTimeout(longPressTimer);
+        const messageId = messageWrapper.dataset.id;
+        const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
+        const message = chat.history.find(m => m.id === messageId);
+        if (!message || message.isRetracted) return;
+
+        const isInvisibleMessage = /\[.*?(?:接收|退回|更新状态为|已接收礼物|system:|邀请|修改群名|拉黑|解除拉黑|移出了群聊|将.+设置为管理员|撤销了.+的管理员)\]/.test(message.content);
+        if (isInvisibleMessage) return;
+
+        let menuItems = [];
+
+        menuItems.push({ label: '引用', action: () => startReply(messageId) });
         
-        switch (item.id) {
-            case 'photo-video-btn':
-            case 'camera-btn':
-                getEl('send-pv-form').reset();
-                getEl('send-pv-modal').classList.add('visible');
-                break;
-            case 'voice-message-btn':
-                getEl('send-voice-form').reset();
-                getEl('voice-duration-preview').textContent = '0"';
-                getEl('send-voice-modal').classList.add('visible');
-                break;
-            case 'wallet-btn': // Red packet
-                 openTransferModal(true);
-                 break;
-            case 'transfer-btn': // Transfer
-                 openTransferModal(false);
-                 break;
-            case 'gift-btn':
-                getEl('send-gift-form').reset();
-                getEl('send-gift-modal').classList.add('visible');
-                break;
-            case 'video-call-btn':
-            case 'location-btn':
-                showToast(`功能“${item.querySelector('span').textContent}”正在开发中...`);
-                break;
+        const canBeEdited = !/\[(?:语音|表情包|照片\/视频|转账|红包|礼物)/.test(message.content);
+        if (canBeEdited) {
+            menuItems.push({ label: '编辑', action: () => startMessageEdit(messageId) });
         }
-    });
-}
 
-function handleMessageLongPress(messageWrapper, x, y) {
-    if (isInMultiSelectMode) return;
-    clearTimeout(longPressTimer);
-    const messageId = messageWrapper.dataset.id;
-    const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
-    const message = chat.history.find(m => m.id === messageId);
-    if (!message || message.isRetracted) return;
-
-    const isInvisibleMessage = /\[.*?(?:接收|退回|更新状态为|已接收礼物|system:|邀请|修改群名|拉黑|解除拉黑|移出了群聊|将.+设置为管理员|撤销了.+的管理员)\]/.test(message.content);
-    if (isInvisibleMessage) return;
-
-    let menuItems = [];
-
-    menuItems.push({ label: '引用', action: () => startReply(messageId) });
-    
-    const canBeEdited = !/\[(?:语音|表情包|照片\/视频|转账|红包|礼物)/.test(message.content);
-    if (canBeEdited) {
-        menuItems.push({ label: '编辑', action: () => startMessageEdit(messageId) });
-    }
-
-    const twoMinutes = 2 * 60 * 1000;
-    if (message.role === 'user' && (Date.now() - message.timestamp < twoMinutes)) {
-        menuItems.push({ label: '撤回', action: () => retractMessage(messageId) });
-    }
-
-    menuItems.push({ label: '多选', action: () => enterMultiSelectMode(messageId) });
-
-    menuItems.push({ label: '删除', danger: true, action: () => {
-        if (confirm('确定要删除这条消息吗？')) {
-            chat.history = chat.history.filter(m => m.id !== messageId);
-            saveData();
-            renderMessages(false, true);
-            renderChatList();
+        const twoMinutes = 2 * 60 * 1000;
+        if (message.role === 'user' && (Date.now() - message.timestamp < twoMinutes)) {
+            menuItems.push({ label: '撤回', action: () => retractMessage(messageId) });
         }
-    }});
 
-    if (menuItems.length > 0) {
-        createContextMenu(menuItems, x, y);
+        menuItems.push({ label: '多选', action: () => enterMultiSelectMode(messageId) });
+
+        menuItems.push({ label: '删除', danger: true, action: () => {
+            if (confirm('确定要删除这条消息吗？')) {
+                chat.history = chat.history.filter(m => m.id !== messageId);
+                saveData();
+                renderMessages(false, true);
+                renderChatList();
+            }
+        }});
+
+        if (menuItems.length > 0) {
+            createContextMenu(menuItems, x, y);
+        }
     }
-}
     function startReply(messageId) {
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const message = chat.history.find(m => m.id === messageId);
@@ -2991,7 +3131,7 @@ function handleMessageLongPress(messageWrapper, x, y) {
         showToast(`已删除 ${selectedMessageIds.size} 条消息`); 
     }
    
-function openChatRoom(chatId, type) {
+    function openChatRoom(chatId, type) {
         const chat = (type === 'private') ? db.characters.find(c => c.id === chatId) : db.groups.find(g => g.id === chatId);
         if (!chat) return;
 
@@ -3082,7 +3222,7 @@ function openChatRoom(chatId, type) {
             const wrapper = document.createElement('div');
             wrapper.className = 'message-wrapper system-notification';
             const sender = message.role === 'user' ? '你' : (message.senderName || '对方');
-            const retractedText = `${sender}撤回了一条消息`;
+            const retractedText = `${sender} 撤回了一条消息`;
             const originalContentData = message.originalContent ? `data-original-content="${message.originalContent.replace(/"/g, '&quot;')}"` : '';
             wrapper.innerHTML = `<div class="system-notification-bubble" ${originalContentData}>${retractedText}</div>`;
             return wrapper;
@@ -3143,6 +3283,11 @@ function openChatRoom(chatId, type) {
         }
         const bubbleRow = document.createElement('div');
         bubbleRow.className = 'message-bubble-row';
+        
+        // BUG FIX #3 START: Dedicated container for bubble and its potential transcript
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'message-content-wrapper';
+        // BUG FIX #3 END
 
         let bubbleContentHTML = '';
         let bubbleWrapperClass = `message-bubble ${isSent ? 'sent user' : 'received ai'}`;
@@ -3151,23 +3296,44 @@ function openChatRoom(chatId, type) {
         const blockedMatch = content.match(new RegExp(`\\[${(assignedChar.realName || '')}被拉黑后的消息：([\\s\\S]+?)\\]`));
         const textMatch = content.match(/\[(?:我在回复“.*?”时说|.*的消息)：([\s\S]+?)\]/);
         
-        if (stickerData || /表情包/.test(content)) {
+        if (/\[.*?的表情包：.*?\]/.test(content)) {
             const stickerUrl = isSent ? stickerData : (content.match(/：(https?:\/\/[^\s]+?)]/i) || [])[1];
             bubbleContentHTML = `<div class="image-bubble"><img src="${stickerUrl}" alt="表情包"></div>`;
-        } else if (/送来的礼物/.test(content)) {
+        } else if (/\[.*?送来的礼物：.*?\]/.test(content)) {
             const description = (content.match(/：([\s\S]+?)\]/) || [])[1]?.trim();
-            bubbleContentHTML = `<div class="gift-card ${giftStatus === 'received' ? 'received' : ''}"><img src="https://i.postimg.cc/rp0Yg31K/chan-75.png" alt="gift" class="gift-card-icon"><div class="gift-card-text">您有一份礼物～</div><div class="gift-card-received-stamp">已查收</div></div>`;
-            if (description) wrapper.insertAdjacentHTML('beforeend', `<div class="gift-card-description">${description}</div>`);
-        } else if (/的语音/.test(content)) {
+            bubbleContentHTML = `
+                <div class="gift-card ${giftStatus === 'received' ? 'received' : ''}">
+                    <div class="gift-card-received-stamp">已查收</div>
+                    <div class="gift-card-inner">
+                        <div class="gift-card-front">
+                            <img src="https://i.postimg.cc/rp0Yg31K/chan-75.png" alt="gift" class="gift-card-icon">
+                            <div class="gift-card-text">您有一份礼物～</div>
+                        </div>
+                        <div class="gift-card-back">
+                            <p class="gift-card-description">${description || '一份心意'}</p>
+                        </div>
+                    </div>
+                </div>`;
+        } else if (/\[.*?的语音：.*?\]/.test(content)) {
             const voiceText = (content.match(/：([\s\S]+?)\]/) || [])[1]?.trim();
             const duration = calculateVoiceDuration(voiceText);
-            bubbleContentHTML = `<div class="voice-bubble"><svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><div class="loading-spinner"></div><span class="duration">${duration}"</span></div>`;
-            if (voiceText) wrapper.insertAdjacentHTML('beforeend', `<div class="voice-transcript-container"><div class="voice-transcript">${voiceText}</div></div>`);
-        } else if (/照片\/视频/.test(content)) {
+            
+            const bubbleNode = document.createElement('div');
+            bubbleNode.className = bubbleWrapperClass;
+            bubbleNode.innerHTML = `<div class="voice-bubble"><svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><div class="loading-spinner"></div><span class="duration">${duration}"</span></div>`;
+            contentWrapper.appendChild(bubbleNode);
+
+            if (voiceText) {
+                const transcriptNode = document.createElement('div');
+                transcriptNode.className = 'voice-transcript';
+                transcriptNode.textContent = voiceText;
+                contentWrapper.appendChild(transcriptNode);
+            }
+        } else if (/\[.*?发来的照片\/视频：.*?\]/.test(content)) {
             const description = (content.match(/：([\s\S]+?)\]/) || [])[1]?.trim();
             const imageUrl = isSent ? 'https://i.postimg.cc/L8NFrBrW/1752307494497.jpg' : 'https://i.postimg.cc/1tH6ds9g/1752301200490.jpg';
             bubbleContentHTML = `<div class="pv-card"><div class="pv-card-content">${description}</div><div class="pv-card-image-overlay" style="background-image: url('${imageUrl}');"></div><div class="pv-card-footer"><svg viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M4,6V18H20V6H4M10,9A1,1 0 0,1 11,10A1,1 0 0,1 10,11A1,1 0 0,1 9,10A1,1 0 0,1 10,9M8,17L11,13L13,15L17,10L20,14V17H8Z"></path></svg><span>照片/视频・点击查看</span></div>`;
-        } else if (/红包/.test(content)) {
+        } else if (/\[.*?的红包：.*?\]/.test(content)) {
             const match = content.match(/：([\d.]+)元；备注：(.*?)]/);
             if (match) {
                 const remarkText = match[2] || '恭喜发财，大吉大利！';
@@ -3184,10 +3350,8 @@ function openChatRoom(chatId, type) {
                         </div>
                         <div class="hongbao-status-footer">${statusText}</div>
                     </div>`;
-            } else {
-                 bubbleContentHTML = `<div class="content">[红包]</div>`; 
             }
-        } else if (/转账/.test(content)) {
+        } else if (/\[.*?给你转账：.*?\]/.test(content)) {
             const match = content.match(/：([\d.]+)元；备注：(.*?)]/);
             if (match) { 
                 const amount = parseFloat(match[1]).toFixed(2);
@@ -3206,8 +3370,6 @@ function openChatRoom(chatId, type) {
                         </div>
                         <div class="transfer-status-footer">${statusText}</div>
                     </div>`;
-            } else {
-                bubbleContentHTML = `<div class="content">[转账]</div>`; 
             }
         } else if (blockedMatch) {
             bubbleContentHTML = `<div class="content">${blockedMatch[1].trim()}</div>`;
@@ -3229,10 +3391,19 @@ function openChatRoom(chatId, type) {
         const nicknameHTML = (currentChatType === 'group' && !isSent && senderNickname) ? `<div class="group-nickname">${senderNickname}</div>` : '';
         const timeString = `${pad(new Date(timestamp).getHours())}:${pad(new Date(timestamp).getMinutes())}`;
         
-        let finalBubbleHTML = `<div class="${bubbleWrapperClass}">${bubbleContentHTML}</div>`;
+        // This 'if' handles all non-voice messages
+        if (!/\[.*?的语音：.*?\]/.test(content)) {
+            const bubbleNode = document.createElement('div');
+            bubbleNode.className = bubbleWrapperClass;
+            bubbleNode.innerHTML = bubbleContentHTML;
+            contentWrapper.appendChild(bubbleNode);
+        }
 
-        const finalRowContent = replyHTML + finalBubbleHTML;
-        bubbleRow.innerHTML += `<div class="message-info">${nicknameHTML}<img src="${avatarUrl}" class="message-avatar"><span class="message-time">${timeString}</span></div>${finalRowContent}`;
+        if(replyHTML) contentWrapper.insertAdjacentHTML('afterbegin', replyHTML);
+
+        bubbleRow.innerHTML += `<div class="message-info">${nicknameHTML}<img src="${avatarUrl}" class="message-avatar"><span class="message-time">${timeString}</span></div>`;
+        bubbleRow.appendChild(contentWrapper);
+
         wrapper.prepend(bubbleRow);
         return wrapper;
     }
@@ -3366,7 +3537,7 @@ function openChatRoom(chatId, type) {
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const assignedMe = (currentChatType === 'private') ? db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0] : { myName: chat.me.nickname };
         const myName = assignedMe.myName;
-        const message = { id: `msg_${Date.now()}`, role: 'user', content: `[${myName}的表情包：${sticker.name}]`, timestamp: Date.now(), stickerData: sticker.data };
+        const message = { id: `msg_${Date.now()}`, role: 'user', content: `[${myName}的表情包：${sticker.data}]`, timestamp: Date.now(), stickerData: sticker.data };
         if(currentChatType === 'group') message.senderId = 'user_me';
         
         chat.history.push(message);
@@ -3551,7 +3722,7 @@ function generatePrivateSystemPrompt(character) {
     }
 
 
-    let prompt = `你正在一个名为"QQ"的线上聊天软件中扮演一个角色。请严格遵守以下规则：\n`;
+    let prompt = `你正在一个名为"微信"的线上聊天软件中扮演一个角色。请严格遵守以下规则：\n`;
     prompt += `核心规则：\n`;
     prompt += `A. 当前时间：现在是 ${currentTime}。\n`;
     prompt += `B. 纯线上互动，严禁提出任何关于线下见面的建议。\n\n`;
@@ -4345,6 +4516,12 @@ function updateSettingsPreview(type) {
                 modelSelect.innerHTML = `<option value="${db.apiSettings.model}">${db.apiSettings.model}</option>`;
             }
         }
+        
+        if(db.imageApiSettings){
+            getEl('image-api-url').value = db.imageApiSettings.url || '';
+            getEl('image-api-key').value = db.imageApiSettings.key || '';
+            getEl('image-api-model').value = db.imageApiSettings.model || '';
+        }
 
         providerSelect.addEventListener('change',()=>{ urlInput.value = apiUrls[providerSelect.value] || '' });
         
@@ -4394,6 +4571,11 @@ function updateSettingsPreview(type) {
                 url: urlInput.value,
                 key: keyInput.value,
                 model: modelSelect.value
+            };
+            db.imageApiSettings = {
+                url: getEl('image-api-url').value.trim(),
+                key: getEl('image-api-key').value.trim(),
+                model: getEl('image-api-model').value.trim(),
             };
             saveData();
             showToast('API设置已保存！');
@@ -4607,8 +4789,8 @@ function setupGroupChatSettings() {
 
         getEl('moment-comment-form').addEventListener('submit', handleCommentSubmit);
         
-        getEl('moments-avatar-upload').addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) try { const url = await compressImage(file, { maxWidth: 200, maxHeight: 200 }); db.momentsSettings.myAvatar = url; getEl('moments-my-avatar-preview').src = url; saveData(); showToast('朋友圈头像已更新'); } catch(err) { showToast('头像压缩失败'); } });
-        getEl('moments-bg-upload').addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) try { const url = await compressImage(file, { quality: 0.85, maxWidth: 1080, maxHeight: 1080 }); db.momentsSettings.background = url; getEl('moments-bg-preview').style.backgroundImage = `url(${url})`; saveData(); showToast('朋友圈封面已更新'); } catch(err) { showToast('封面压缩失败'); } });
+        getEl('moments-avatar-upload').addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) try { const url = await compressImage(file, { maxWidth: 200, maxHeight: 200 }); db.momentsSettings.myAvatar = url; getEl('moments-my-avatar-preview').src = url; saveData(); showToast('朋友圈头像已更新'); if(getEl('moments-screen').classList.contains('active')) renderMomentsFeed(); } catch(err) { showToast('头像压缩失败'); } });
+        getEl('moments-bg-upload').addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) try { const url = await compressImage(file, { quality: 0.85, maxWidth: 1080, maxHeight: 1080 }); db.momentsSettings.background = url; getEl('moments-bg-preview').style.backgroundImage = `url(${url})`; saveData(); showToast('朋友圈封面已更新'); if(getEl('moments-screen').classList.contains('active')) renderMomentsFeed(); } catch(err) { showToast('封面压缩失败'); } });
 
         setInterval(automaticPostScheduler, 5 * 60 * 1000);
     }
@@ -5211,47 +5393,18 @@ function setupGroupChatSettings() {
 
     async function proactiveChatScheduler() {
         for (const character of db.characters) {
-            if (!character.proactiveChat || !character.proactiveChat.enabled) {
+            if (!character.proactiveChat || !character.proactiveChat.enabled || isGenerating) {
                 continue;
             }
 
-            if (isGenerating) continue;
-            
-            if (character.history.length === 0) {
-                 if (Math.random() < 0.1) {
-                     const prompt = generateProactiveChatPrompt(character);
-                     const reply = await getAiReply(prompt);
-                     if (reply) {
-                        const messages = reply.match(/\[.*?\]/g) || [];
-                        let firstMessageContent = '';
-                        messages.forEach((msgContent, index) => {
-                            if (index === 0) firstMessageContent = msgContent;
-                            const message = {
-                                id: `msg_${Date.now()}_${Math.random()}`,
-                                role: 'assistant',
-                                content: msgContent.trim(),
-                                timestamp: Date.now()
-                            };
-                            character.history.push(message);
-                        });
-                        character.unreadCount = (character.unreadCount || 0) + 1;
-                        saveData();
-                        renderChatList();
-                        if (!getEl('chat-room-screen').classList.contains('active')) {
-                             showTopNotification(character, firstMessageContent);
-                        }
-                     }
-                 }
-                 continue;
-            }
+            const lastMessage = character.history.length > 0 ? character.history[character.history.length - 1] : null;
 
-            const lastMessage = character.history[character.history.length - 1];
-            if (lastMessage.role !== 'user') {
+            if (lastMessage && lastMessage.role !== 'user') {
                 continue;
             }
 
             const now = Date.now();
-            const timeSinceLastMessage = now - lastMessage.timestamp;
+            const timeSinceLastMessage = lastMessage ? (now - lastMessage.timestamp) : Infinity;
 
             const frequencyMap = {
                 high: { min: 1, max: 4 },
@@ -5265,11 +5418,13 @@ function setupGroupChatSettings() {
             if (timeSinceLastMessage > randomDelay) {
                 const prompt = generateProactiveChatPrompt(character);
                 const reply = await getAiReply(prompt);
+                
                 if (reply) {
                     const messages = reply.match(/\[.*?\]/g) || [];
-                    let firstMessageContent = '';
-                    messages.forEach((msgContent, index) => {
-                        if (index === 0) firstMessageContent = msgContent;
+                    if (messages.length === 0) continue;
+
+                    let firstMessageContent = messages[0];
+                    messages.forEach(msgContent => {
                         const message = {
                             id: `msg_${Date.now()}_${Math.random()}`,
                             role: 'assistant',
@@ -5277,14 +5432,15 @@ function setupGroupChatSettings() {
                             timestamp: Date.now()
                         };
                         character.history.push(message);
-                        if (character.id === currentChatId && getEl('chat-room-screen').classList.contains('active')) {
-                           addMessageBubble(message);
-                        }
                     });
                     character.unreadCount = (character.unreadCount || 0) + 1;
                     saveData();
+
+                    if (character.id === currentChatId && getEl('chat-room-screen').classList.contains('active')) {
+                       renderMessages(false, true);
+                    }
                     renderChatList();
-                    if (character.id !== currentChatId || !getEl('chat-room-screen').classList.contains('active')) {
+                    if (!getEl('chat-room-screen').classList.contains('active') || character.id !== currentChatId) {
                          showTopNotification(character, firstMessageContent);
                     }
                 }
@@ -5298,7 +5454,7 @@ function setupGroupChatSettings() {
         const lastMessage = character.history.length > 0 ? character.history[character.history.length - 1] : null;
         const currentTime = new Date().toLocaleString('zh-CN', { hour12: false });
         
-        let context = "你们还没有聊过天。";
+        let context = "你们还没有聊过天，这是你第一次主动和对方打招呼。";
         if (lastMessage) {
             const lastMessageTime = new Date(lastMessage.timestamp).toLocaleString('zh-CN', { hour12: false });
             const lastMessages = character.history.slice(-5).map(m => {
@@ -5314,9 +5470,10 @@ function setupGroupChatSettings() {
 现在是 ${currentTime}。
 ${context}
 
-你需要根据当前时间和你们最近的聊天内容（或朋友圈动态），非常自然地开启一个新的话题或继续之前的话题，主动发消息给“${assignedMe.myName}”。
+你的任务是：根据当前时间和你们的聊天历史，非常自然地开启一个新的话题或继续之前的话题，主动发消息给“${assignedMe.myName}”。
 【重要】请参考当前时间和上次对话的时间差来决定你的开场白。例如，如果是第二天早上，可以说“早上好”；如果只是过了几个小时，可以接着之前的话题说。
-【禁止】使用“在吗？”、“你好”等干巴巴的开场白。
+【禁止】绝对不许使用“在吗？”、“你好”这类干巴巴的开场白。你的开场白必须有内容，有意义。
+【输出限制】你的回复必须且只能包含一条简短的消息。模仿真实的人类聊天习惯，不要长篇大论。
 【要求】你的回复必须严格遵循格式：[${assignedChar.realName}的消息：{你的聊天内容}]`;
     }
     
