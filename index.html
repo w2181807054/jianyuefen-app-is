@@ -1600,243 +1600,44 @@
             font-weight: 500;
         }
 
-        /* --- Call Feature Styles --- */
-        #outgoing-call-screen, #video-call-screen {
-            background-color: #1c1c1e;
+        #call-screen-overlay {
+            flex-direction: column;
+            background: rgba(0,0,0,0.8);
             color: white;
-            justify-content: center;
-            align-items: center;
+            z-index: 1000;
         }
-        #incoming-call-modal .modal-window {
-            background: transparent;
-            box-shadow: none;
-        }
-        #incoming-call-modal .incoming-call-content {
-            background-color: rgba(40, 40, 40, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            width: 280px;
-            padding: 30px 20px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .caller-avatar {
-            width: 80px;
-            height: 80px;
+        #call-screen-avatar {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            margin-bottom: 12px;
+            margin-bottom: 20px;
             border: 3px solid rgba(255,255,255,0.5);
         }
-        .caller-name {
-            font-size: 20px;
+        #call-screen-name {
+            font-size: 24px;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
-        .caller-text {
-            font-size: 14px;
-            color: #ccc;
-            margin-bottom: 30px;
-        }
-        .incoming-call-actions {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-        .action-button-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #e0e0e0;
-        }
-        .call-action-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            background-size: 50%;
-            background-repeat: no-repeat;
-            background-position: center;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .call-action-btn svg {
-             width: 50%;
-             height: 50%;
-             fill: white;
-        }
-        .call-action-btn:active {
-            transform: scale(0.9);
-        }
-        .call-action-btn.decline {
-            background-color: #ff3b30;
-        }
-        .call-action-btn.accept {
-            background-color: #4cd964;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(76, 217, 100, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(76, 217, 100, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(76, 217, 100, 0); }
-        }
-
-        #video-call-screen {
-            display: none; /* Default to none, controlled by JS */
-        }
-        .video-call-top-bar {
-            position: absolute;
-            top: 0; left: 0; width: 100%;
-            padding: 15px 20px;
-            padding-top: 50px; /* Safe area for notch */
-            background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
-            z-index: 10;
-            text-align: center;
-            box-sizing: border-box;
-            pointer-events: none;
-        }
-        #call-timer {
+        #call-screen-status {
             font-size: 16px;
-            font-weight: 500;
-            letter-spacing: 1px;
-        }
-        .video-call-controls {
-            position: absolute;
-            bottom: 0; left: 0; width: 100%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 20px;
-            padding-bottom: 40px; /* Safe area for home bar */
-            background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
-            z-index: 10;
-            box-sizing: border-box;
-        }
-        .video-call-avatar-area {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            padding-top: 80px; /* Ensure top has enough space */
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-        #participant-avatars-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            max-width: 100%;
-        }
-        .participant-avatar-wrapper {
-            position: relative;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .participant-avatar {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .participant-name {
-            margin-top: 8px;
-            font-size: 12px;
             color: #ccc;
+            margin-bottom: 60px;
         }
-        .participant-avatar.speaking {
-            border-color: #4cd964;
-            box-shadow: 0 0 20px rgba(76, 217, 100, 0.6);
-            transform: scale(1.05);
-        }
-        #video-call-main {
-            flex-shrink: 0;
-            height: 30%;
-            margin: 15px 15px 130px 15px;
-            overflow-y: auto;
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-sizing: border-box;
-        }
-        .control-btn {
+        #end-call-btn {
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            background-repeat: no-repeat;
-            background-position: center;
-            transition: transform 0.2s, background-color 0.2s;
+            background-color: #e53935;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .control-btn svg {
-            width: 50%;
-            height: 50%;
+        #end-call-btn svg {
+            width: 36px;
+            height: 36px;
             fill: white;
         }
-        .control-btn:active {
-            transform: scale(0.9);
-        }
-        .control-btn.speak-btn {
-            background-color: rgba(255,255,255,0.2);
-        }
-        .control-btn.hangup-btn {
-            background-color: #ff3b30;
-        }
-        .control-btn.join-btn {
-            background-color: #007bff;
-        }
-        .call-message-bubble {
-            padding: 10px 15px;
-            border-radius: 12px;
-            max-width: 85%;
-            line-height: 1.6;
-            word-break: break-word;
-            white-space: pre-wrap;
-        }
-        .call-message-bubble.ai-speech {
-            background-color: rgba(255, 255, 255, 0.15);
-            align-self: flex-start; /* AI发言靠左 */
-        }
-        .call-message-bubble.user-speech {
-            background-color: #4cd964;
-            align-self: flex-end;   /* 用户发言靠右 */
-            text-align: left;
-        }
-        .outgoing-call-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .outgoing-call-actions {
-            margin-top: 50px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #e0e0e0;
-        }
-
     </style>
 </head>
 <body>
@@ -1860,16 +1661,11 @@
         <div id="font-settings-screen" class="screen"></div>
         <div id="tutorial-screen" class="screen"></div>
         
-        <!-- Call Screens -->
-        <div id="outgoing-call-screen" class="screen"></div>
-        <div id="video-call-screen" class="screen"></div>
-
         <!-- Memory Core Screens -->
         <div id="memory-core-screen" class="screen"></div>
         <div id="edit-memory-screen" class="screen"></div>
         <div id="memory-core-settings-screen" class="screen"></div>
         
-        <!-- Modals and Overlays -->
         <div id="toast-notification" class="toast"></div>
         <div id="add-char-modal" class="modal-overlay"></div>
         <div id="add-me-modal" class="modal-overlay"></div>
@@ -1888,9 +1684,8 @@
         <div id="create-moment-modal" class="modal-overlay"></div>
         <div id="pat-pat-modal" class="modal-overlay"></div>
         <div id="send-location-modal" class="modal-overlay"></div>
-        <div id="incoming-call-modal" class="modal-overlay"></div>
+        <div id="call-screen-overlay" class="modal-overlay"></div>
 
-        <!-- Sidebars and other overlays -->
         <div id="chat-settings-sidebar" class="settings-sidebar"></div>
         <div id="world-book-selection-modal" class="modal-overlay"></div>
         <div id="create-group-modal" class="modal-overlay"></div>
@@ -2224,53 +2019,13 @@ function injectHTML() {
                 <button type="submit" class="btn btn-primary">保存自定义主题</button>
             </form>
         </div>`,
-        'incoming-call-modal': `
-            <div class="modal-window">
-                <div class="incoming-call-content">
-                    <img id="caller-avatar" src="" class="caller-avatar" alt="Caller Avatar">
-                    <div id="caller-name" class="caller-name"></div>
-                    <div class="caller-text"></div>
-                    <div class="incoming-call-actions">
-                        <div class="action-button-wrapper">
-                            <button class="call-action-btn decline" id="decline-call-btn"><svg viewBox="0 0 24 24"><path d="M12,9C10.4,9 8.85,9.25 7.4,9.72V12.82C7.4,13.22 7.17,13.56 6.84,13.72C5.86,14.21 4.97,14.84 4.17,15.57C4,15.75 3.75,15.86 3.5,15.86C3.2,15.86 3,15.76 2.83,15.59L0.41,13.17C0.05,12.81 0,12.23 0.28,11.78C3.12,6.87 7.26,4 12,4C16.74,4 20.88,6.87 23.72,11.78C24,12.23 23.95,12.81 23.59,13.17L21.17,15.59C21,15.76 20.8,15.86 20.5,15.86C20.25,15.86 20,15.75 19.83,15.57C19.03,14.84 18.14,14.21 17.16,13.72C16.83,13.56 16.6,13.22 16.6,12.82V9.72C15.15,9.25 13.6,9 12,9Z"/></svg></button>
-                            <span>拒绝</span>
-                        </div>
-                        <div class="action-button-wrapper">
-                            <button class="call-action-btn accept" id="accept-call-btn"><svg viewBox="0 0 24 24"><path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z"/></svg></button>
-                            <span>接听</span>
-                        </div>
-                    </div>
-                </div>
-            </div>`,
-        'outgoing-call-screen': `
-             <div class="outgoing-call-content">
-                <img id="outgoing-call-avatar" src="" class="caller-avatar" alt="Avatar" style="width: 100px; height: 100px;">
-                <h2 id="outgoing-call-name" class="caller-name" style="font-size: 24px;"></h2>
-                <p class="caller-text">正在等待对方接听...</p>
-                <div class="outgoing-call-actions">
-                    <button class="call-action-btn decline" id="cancel-outgoing-call-btn" style="width: 70px; height: 70px;"><svg viewBox="0 0 24 24"><path d="M12,9C10.4,9 8.85,9.25 7.4,9.72V12.82C7.4,13.22 7.17,13.56 6.84,13.72C5.86,14.21 4.97,14.84 4.17,15.57C4,15.75 3.75,15.86 3.5,15.86C3.2,15.86 3,15.76 2.83,15.59L0.41,13.17C0.05,12.81 0,12.23 0.28,11.78C3.12,6.87 7.26,4 12,4C16.74,4 20.88,6.87 23.72,11.78C24,12.23 23.95,12.81 23.59,13.17L21.17,15.59C21,15.76 20.8,15.86 20.5,15.86C20.25,15.86 20,15.75 19.83,15.57C19.03,14.84 18.14,14.21 17.16,13.72C16.83,13.56 16.6,13.22 16.6,12.82V9.72C15.15,9.25 13.6,9 12,9Z"/></svg></button>
-                    <span>取消</span>
-                </div>
-            </div>`,
-        'video-call-screen': `
-            <div class="video-call-top-bar">
-                <span id="call-timer">00:00</span>
-            </div>
-            <div class="video-call-avatar-area">
-                <div id="participant-avatars-grid"></div>
-            </div>
-            <div id="video-call-main"></div>
-            <div class="video-call-controls">
-                 <button class="control-btn speak-btn" id="user-speak-btn">
-                     <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                 </button>
-                 <button class="control-btn join-btn" id="join-call-btn" style="display: none;">
-                    <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg>
-                 </button>
-                 <button class="control-btn hangup-btn" id="hangup-call-btn">
-                     <svg viewBox="0 0 24 24"><path d="M12,9C10.4,9 8.85,9.25 7.4,9.72V12.82C7.4,13.22 7.17,13.56 6.84,13.72C5.86,14.21 4.97,14.84 4.17,15.57C4,15.75 3.75,15.86 3.5,15.86C3.2,15.86 3,15.76 2.83,15.59L0.41,13.17C0.05,12.81 0,12.23 0.28,11.78C3.12,6.87 7.26,4 12,4C16.74,4 20.88,6.87 23.72,11.78C24,12.23 23.95,12.81 23.59,13.17L21.17,15.59C21,15.76 20.8,15.86 20.5,15.86C20.25,15.86 20,15.75 19.83,15.57C19.03,14.84 18.14,14.21 17.16,13.72C16.83,13.56 16.6,13.22 16.6,12.82V9.72C15.15,9.25 13.6,9 12,9Z"/></svg>
-                 </button>
-            </div>`
+        'call-screen-overlay': `
+            <img id="call-screen-avatar" src="" alt="avatar">
+            <h2 id="call-screen-name"></h2>
+            <p id="call-screen-status">正在等待对方接听...</p>
+            <button id="end-call-btn" class="btn">
+                <svg viewBox="0 0 24 24"><path d="M12,9C10.4,9 8.85,9.25 7.4,9.72V12.82C7.4,13.22 7.17,13.56 6.84,13.72C5.86,14.21 4.97,14.84 4.17,15.57C4,15.75 3.75,15.86 3.5,15.86C3.2,15.86 3,15.76 2.83,15.59L0.41,13.17C0.05,12.81 0,12.23 0.28,11.78C3.12,6.87 7.26,4 12,4C16.74,4 20.88,6.87 23.72,11.78C24,12.23 23.95,12.81 23.59,13.17L21.17,15.59C21,15.76 20.8,15.86 20.5,15.86C20.25,15.86 20,15.75 19.83,15.57C19.03,14.84 18.14,14.21 17.16,13.72C16.83,13.56 16.6,13.22 16.6,12.82V9.72C15.15,9.25 13.6,9 12,9Z"></path></svg>
+            </button>`
     };
     for (const id in htmlMap) {
         const element = document.getElementById(id);
@@ -2322,23 +2077,6 @@ let currentReplyInfo = null;
 let currentChatId = null, currentChatType = null, isGenerating = false, longPressTimer = null, isInMultiSelectMode = false, editingMessageId = null, currentPage = 1, currentTransferMessageId = null, currentEditingWorldBookId = null, currentStickerActionTarget = null, currentEditingMemoryId = null, notificationTimeout = null;
 let selectedMessageIds = new Set();
 const MESSAGES_PER_PAGE = 50;
-
-// NEW: Video Call State
-let videoCallState = {
-    isActive: false,
-    isAwaitingResponse: false,
-    isGroupCall: false,
-    activeChatId: null,
-    initiator: null, // 'user' or 'ai'
-    startTime: null,
-    participants: [], // For group calls
-    isUserParticipating: true,
-    callHistory: [],
-    preCallContext: "",
-    callRequester: null, // Name of the AI who started a group call
-};
-let callTimerInterval = null;
-
 
 // Cache DOM elements after they are injected
 let domCache = {};
@@ -2642,8 +2380,8 @@ const init = () => {
                 switchScreen(target);
              }
         }
-         const plusMenu = getEl('chat-plus-menu');
-                 if(plusMenu?.classList.contains('visible') && !e.target.closest('.chat-input-wrapper')) {
+        const plusMenu = getEl('chat-plus-menu');
+        if(plusMenu?.classList.contains('visible') && !e.target.closest('.chat-input-wrapper')) {
             togglePlusMenu(false);
         }
         if (getEl('sticker-modal')?.classList.contains('visible') && !e.target.closest('#sticker-modal') && !e.target.closest('#sticker-toggle-btn')) { 
@@ -3060,13 +2798,15 @@ function renderChatList() {
     sortedChats.forEach(chat => {
         let lastMessageText = '开始聊天吧...';
         if (chat.history?.length > 0) {
-            const lastMsg = chat.history.filter(msg => msg.type !== 'system' && msg.role !== 'system').pop();
+            const lastMsg = chat.history.filter(msg => {
+                const content = msg.content || '';
+                return !/^\[(system:|.*?拉黑|.*?解除拉黑|.*?邀请.*?加入了群聊|.*?修改群名为|.*?接收|.*?退回|.*?已接收礼物|.*?领取了.*?的红包|.*?移出了群聊|.*?将.+设置为管理员|.*?撤销了.+的管理员)\]$/.test(content);
+            }).pop();
             if (lastMsg) {
                  const content = lastMsg.content || '';
                  if(lastMsg.isRetracted) {
                     lastMessageText = lastMsg.role === 'user' ? '你撤回了一条消息' : `${lastMsg.senderName || '对方'}撤回了一条消息`;
                 }
-                else if (content.includes('视频通话') || content.includes('语音通话')) lastMessageText = '[通话]';
                 else if (/\[.*?的位置：.*?\]/.test(content)) lastMessageText = '[位置]';
                 else if (/\[.*?拍了拍.*?\]/.test(content)) lastMessageText = '[拍了拍]';
                 else if (/\[.*?送来的礼物：.*?\]/.test(content)) lastMessageText = '[礼物]';
@@ -3521,7 +3261,7 @@ function toggleStickerModal(forceState) {
                     getEl('send-location-modal').classList.add('visible');
                     break;
                 case 'video-call-btn':
-                    handleInitiateCall();
+                    startCall('video');
                     break;
             }
         });
@@ -3533,7 +3273,7 @@ function toggleStickerModal(forceState) {
         const messageId = messageWrapper.dataset.id;
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const message = chat.history.find(m => m.id === messageId);
-        if (!message || message.isRetracted || message.type === 'system') return;
+        if (!message || message.isRetracted) return;
 
         const isInvisibleMessage = /\[(system:|.*?拉黑|.*?解除拉黑|.*?邀请|.*?修改群名为|.*?接收|.*?退回|.*?已接收礼物|.*?领取了.*?的红包|.*?移出了群聊|.*?将.+设置为管理员|.*?撤销了.+的管理员|.*?拍了拍.*?)\]/.test(message.content);
         if (isInvisibleMessage) return;
@@ -3718,8 +3458,7 @@ function toggleStickerModal(forceState) {
 
         getEl('dynamic-chat-style').innerHTML = `#chat-room-screen[data-active-chat-id="${chat.id}"] .message-bubble .content, #chat-room-screen[data-active-chat-id="${chat.id}"] .gift-card-description { font-size: ${chat.fontSize || 15}px; }`;
         applyCustomCss(chat.id, chat.customBubbleCss || '');
-        
-        toggleCallButtons(type === 'group');
+
         renderMessages(false, true);
         switchScreen('chat-room-screen');
     }
@@ -3761,13 +3500,6 @@ function toggleStickerModal(forceState) {
     function calculateVoiceDuration(text) { return Math.max(1, Math.min(60, Math.ceil(text.length / 3.5))); }
     
     function createMessageBubbleElement(message) {
-        if (message.type === 'system') {
-             const wrapper = document.createElement('div');
-             wrapper.className = 'message-wrapper system-notification';
-             wrapper.innerHTML = `<div class="system-notification-bubble">${message.content}</div>`;
-             return wrapper;
-        }
-
         if (message.isRetracted) {
             const wrapper = document.createElement('div');
             wrapper.className = 'message-wrapper system-notification';
@@ -3780,11 +3512,21 @@ function toggleStickerModal(forceState) {
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const { role, content, timestamp, id, transferStatus, giftStatus, stickerData, senderId, replyTo, transferInfo, locationData } = message;
         
+        const systemRegex = /^\[(.*?(?:邀请.*?加入了群聊|修改群名为：.*?|已将.*?拉黑|已将.*?解除拉黑|领取了.*?的红包|移出了群聊|将.+设置为管理员|撤销了.+的管理员|拍了拍.+))\]$/;
+        const systemMatch = content.match(systemRegex);
+
         const invisibleRegex = /^\[(system:|.*?接收.*?的|.*?退回.*?的|.*?已接收礼物|.*?更新状态为：.*?)\]$/;
         if (invisibleRegex.test(content)) return null;
 
         const wrapper = document.createElement('div');
         wrapper.dataset.id = id;
+
+        if (systemMatch) {
+            wrapper.className = 'message-wrapper system-notification';
+            let notificationText = systemMatch[1];
+            wrapper.innerHTML = `<div class="system-notification-bubble">${notificationText}</div>`;
+            return wrapper;
+        }
         
         const isSent = (role === 'user');
         let avatarUrl, senderNickname = '';
@@ -3993,7 +3735,14 @@ function toggleStickerModal(forceState) {
                  const claimerName = transferActionMatch[1];
                  const claimer = chat.members.find(m => m.realName === claimerName);
                  const sender = chat.members.find(m => m.id === transferMsg.senderId) || {groupNickname: chat.me.nickname};
-                 sendSystemNotification(chat, `"${claimer ? claimer.groupNickname : claimerName}"领取了"${sender.groupNickname}"的红包`);
+                 const systemMsg = {
+                    id: `msg_system_${Date.now()}_${Math.random()}`,
+                    role: 'system',
+                    content: `[${claimer ? claimer.groupNickname : claimerName}领取了${sender.groupNickname}的红包]`,
+                    timestamp: Date.now()
+                 };
+                 chat.history.push(systemMsg);
+                 addMessageBubble(systemMsg);
             }
             processMessage = false;
         }
@@ -4008,22 +3757,6 @@ function toggleStickerModal(forceState) {
             }
             processMessage = false;
         }
-        
-        // Handle Call Responses
-        const callAcceptMatch = message.content.match(new RegExp(`^\\[(.*?)已接听通话\\]$`));
-        const callDeclineMatch = message.content.match(new RegExp(`^\\[(.*?)已拒接通话\\]$`));
-        if (videoCallState.isAwaitingResponse && (callAcceptMatch || callDeclineMatch)) {
-            if (callAcceptMatch) {
-                videoCallState.isAwaitingResponse = false;
-                startVideoCall();
-            } else if (callDeclineMatch) {
-                sendSystemNotification(chat, '对方已拒接');
-                resetCallState();
-                switchScreen('chat-room-screen');
-            }
-            processMessage = false;
-        }
-
 
         if (processMessage) {
             const bubbleElement = createMessageBubbleElement(message);
@@ -4187,9 +3920,18 @@ function toggleStickerModal(forceState) {
         const chat = db.characters.find(c => c.id === currentChatId);
         if (!chat) return;
         const me = db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0];
-        const content = text ? `你拍了拍“${chat.remarkName}”并说：${text}` : `你拍了拍“${chat.remarkName}”`;
+        const content = text ? `[你拍了拍“${chat.remarkName}”并说：${text}]` : `[你拍了拍“${chat.remarkName}”]`;
         
-        sendSystemNotification(chat, content);
+        const message = {
+            id: `msg_system_${Date.now()}`,
+            role: 'system',
+            content: content,
+            timestamp: Date.now()
+        };
+        chat.history.push(message);
+        addMessageBubble(message);
+        saveData();
+        renderChatList();
         getEl('pat-pat-modal').classList.remove('visible');
     }
 
@@ -4353,19 +4095,16 @@ function generatePrivateSystemPrompt(character) {
     prompt += `8. ✨重要✨ 你可以随时更新你的在线状态，以反映你当前的行为或心情。这会让互动更真实。格式为：[${assignedChar.realName}更新状态为：xxx]。例如：[${assignedChar.realName}更新状态为：正在看电影...]。这条指令不会显示为聊天消息，只会更新你在我界面上的状态。\n`;
     prompt += `9. 你的所有回复都必须直接是聊天内容，绝对不允许包含任何如[心理活动]、(动作)、*环境描写*等多余的、在括号或星号里的叙述性文本。\n`;
     prompt += `10. 你拥有发送表情包的能力。这是一个可选功能，你可以根据对话氛围和内容，自行判断是否需要发送表情包来辅助表达。你不必在每次回复中都包含表情包。格式为：[${assignedChar.realName}发送的表情包：图片URL]。\n`;
-    prompt += `11. ✨重要✨ 我可能会向你发起视频或语音通话。你会收到一条格式为 [system: ${assignedMe.myName} 正在尝试向你发起视频/语音通话。...] 的系统指令。你必须对此作出回应，你的下一条回复【必须且只能】是以下两种格式之一：
-    a) 接受通话: [${assignedChar.realName}已接听通话]
-    b) 拒绝通话: [${assignedChar.realName}已拒接通话]\n`;
 
     if (character.isBlocked) {
-        prompt += `12. **特别注意：我目前已将你"拉黑"。** 这意味着我可能看不到或不愿意接收你的消息。你应该知道这个状态，并在你的回复中有所体现，例如可以表达困惑、疑问"你还在吗？"、"为什么不回复我了？"，或者尝试以不同的方式沟通。但你依然可以继续发送消息。**当你被拉黑时，你的输出格式必须是：[${assignedChar.realName}被拉黑后的消息：{消息内容}]**。\n`;
+        prompt += `11. **特别注意：我目前已将你"拉黑"。** 这意味着我可能看不到或不愿意接收你的消息。你应该知道这个状态，并在你的回复中有所体现，例如可以表达困惑、疑问"你还在吗？"、"为什么不回复我了？"，或者尝试以不同的方式沟通。但你依然可以继续发送消息。**当你被拉黑时，你的输出格式必须是：[${assignedChar.realName}被拉黑后的消息：{消息内容}]**。\n`;
     }
     
-    prompt += `13. ✨重要✨ 模仿人类行为，你有时会说错话或打错字或不好意思发出去，因此你拥有**撤回消息**的能力。当你需要撤回你**刚刚发送**的消息时，你的下一次回复**必须**包含一条撤回指令。这条指令不会显示，但会触发撤回效果。格式为：[${assignedChar.realName}撤回了一条消息]。你可以在发送撤回指令后，再发一条新消息作为更正（例如：“[张三撤回了一条消息] [张三的消息：抱歉，我的意思是...]”）。\n`;
-    prompt += `14. ✨重要✨ 你也拥有“拍一拍”我的能力。这是一种轻松的互动方式。格式为：[${assignedChar.realName}拍了拍“${assignedMe.myName}”] 或者 [${assignedChar.realName}拍了拍“${assignedMe.myName}”并说：${character.patPatResponse || ''}]。这条指令会显示为一条系统消息。\n`;
-    prompt += `15. ✨重要✨ 你可以主动发送位置。格式为：[${assignedChar.realName}的位置：{"name":"位置名称", "address":"详细地址"}]。\n`;
+    prompt += `12. ✨重要✨ 模仿人类行为，你有时会说错话或打错字或不好意思发出去，因此你拥有**撤回消息**的能力。当你需要撤回你**刚刚发送**的消息时，你的下一次回复**必须**包含一条撤回指令。这条指令不会显示，但会触发撤回效果。格式为：[${assignedChar.realName}撤回了一条消息]。你可以在发送撤回指令后，再发一条新消息作为更正（例如：“[张三撤回了一条消息] [张三的消息：抱歉，我的意思是...]”）。\n`;
+    prompt += `13. ✨重要✨ 你也拥有“拍一拍”我的能力。这是一种轻松的互动方式。格式为：[${assignedChar.realName}拍了拍“${assignedMe.myName}”] 或者 [${assignedChar.realName}拍了拍“${assignedMe.myName}”并说：${character.patPatResponse || ''}]。这条指令会显示为一条系统消息。\n`;
+    prompt += `14. ✨重要✨ 你可以主动发送位置。格式为：[${assignedChar.realName}的位置：{"name":"位置名称", "address":"详细地址"}]。\n`;
 
-    prompt += `16. 你的输出格式必须严格遵循以下几种之一，可以组合使用：
+    prompt += `15. 你的输出格式必须严格遵循以下几种之一，可以组合使用：
 a) 普通消息: [${assignedChar.realName}的消息：{消息内容}]
 b) 被拉黑后的消息(仅当你被拉黑时使用): [${assignedChar.realName}被拉黑后的消息：{消息内容}]
 c) 送我的礼物: [${assignedChar.realName}送来的礼物：{礼物描述}]
@@ -4378,8 +4117,8 @@ i) 对我礼物的回应(此条不显示): [${assignedChar.realName}已接收礼
 j) 对我转账/红包的回应(此条不显示): [${assignedChar.realName}接收${assignedMe.myName}的转账/红包] 或 [${assignedChar.realName}退回${assignedMe.myName}的转账]
 k) 更新状态(此条不显示): [${assignedChar.realName}更新状态为：{新状态}]
 `;
-    prompt += `17. 你的每次回复可以生成3到8条消息。这些消息应以普通文本消息为主，可以偶尔、选择性地穿插一条特殊消息（如礼物、语音、图片、表情包、位置等），特殊消息的位置应随机。大部分回复应该只包含文本消息。\n`;
-    prompt += `18. 不要主动结束对话，除非我明确提出。保持你的人设，自然地进行对话。`;
+    prompt += `16. 你的每次回复可以生成3到8条消息。这些消息应以普通文本消息为主，可以偶尔、选择性地穿插一条特殊消息（如礼物、语音、图片、表情包、位置等），特殊消息的位置应随机。大部分回复应该只包含文本消息。\n`;
+    prompt += `17. 不要主动结束对话，除非我明确提出。保持你的人设，自然地进行对话。`;
     
     return prompt;
 }
@@ -4440,16 +4179,6 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
              switchScreen('api-settings-screen');
         }
         return null;
-    }
-    
-    // FIX: Ensure there's content to send
-    if (!customPrompt && (!messages || messages.length === 0) && !imageBase64) {
-        if(currentChatId) { // If it's a regular chat reply attempt with no history, do nothing
-            return null;
-        }
-        // If it's an internal call with no prompt, it's an error.
-        console.error("getAiReply called with no prompt or messages.");
-        return null; 
     }
 
     const chat = (currentChatType && currentChatId) ? (currentChatType === 'private' ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId)) : null;
@@ -4512,17 +4241,6 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
             if (provider === 'gemini') {
                  const geminiPayload = { contents: payloadMessages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })), system_instruction: { parts: [{ text: systemPrompt }] }, generationConfig: {} };
                  if(geminiPayload.contents[0]?.role === 'user' && geminiPayload.contents[0]?.parts[0].text.includes(systemPrompt)) geminiPayload.contents.shift(); 
-                 
-                 // FIX: Prevent empty contents array for Gemini
-                 if (geminiPayload.contents.length === 0 && isInternalCall) {
-                     geminiPayload.contents.push({ role: 'user', parts: [{text: " "}] }); // Add a dummy message if needed
-                 } else if (geminiPayload.contents.length === 0) {
-                     isGenerating = false;
-                     updateSendAiButtonState();
-                     if(chat) getEl('typing-indicator').style.display = 'none';
-                     return null;
-                 }
-                 
                  const fetchUrl = stream ? `${url}/v1beta/models/${model}:streamGenerateContent?key=${key}` : `${url}/v1beta/models/${model}:generateContent?key=${key}`;
                  response = await fetch(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload) });
             } else {
@@ -5103,304 +4821,36 @@ function setupLocationFeature() {
     });
 }
 function setupCallFeature() {
-    // User cancels an outgoing call
-    getEl('cancel-outgoing-call-btn').addEventListener('click', () => {
-        const chat = (currentChatType === 'private') 
-            ? db.characters.find(c => c.id === currentChatId)
-            : db.groups.find(g => g.id === currentChatId);
-        if (chat) {
-            sendSystemNotification(chat, `通话已取消`);
-        }
-        resetCallState();
-        switchScreen('chat-room-screen');
-    });
-
-    // User declines an incoming call
-    getEl('decline-call-btn').addEventListener('click', () => {
-        const chat = db.characters.find(c => c.id === videoCallState.activeChatId);
-        if (chat) {
-             sendSystemNotification(chat, `你拒接了通话`);
-        }
-        getEl('incoming-call-modal').classList.remove('visible');
-        resetCallState();
-    });
-    
-    // User accepts an incoming call
-    getEl('accept-call-btn').addEventListener('click', () => {
-        getEl('incoming-call-modal').classList.remove('visible');
-        startVideoCall();
-    });
-
-    // User hangs up an active call
-    getEl('hangup-call-btn').addEventListener('click', () => {
-        endVideoCall();
-    });
-
-    // User speaks during a call
-    getEl('user-speak-btn').addEventListener('click', () => {
-        const userInput = prompt("你在通话中想说什么？");
-        if (userInput && userInput.trim()) {
-            const callFeed = getEl('video-call-main');
-            const userBubble = document.createElement('div');
-            userBubble.className = 'call-message-bubble user-speech';
-            userBubble.textContent = userInput.trim();
-            callFeed.appendChild(userBubble);
-            callFeed.scrollTop = callFeed.scrollHeight;
-            triggerAiInCallAction(userInput.trim());
+    getEl('call-screen-overlay').addEventListener('click', e => {
+        if(e.target.closest('#end-call-btn') || e.target.id === 'call-screen-overlay') {
+            getEl('call-screen-overlay').classList.remove('visible');
         }
     });
 }
-
-function toggleCallButtons(isGroup) {
-    const videoCallBtn = document.getElementById('video-call-btn');
-    if(videoCallBtn) { 
-        videoCallBtn.style.display = isGroup ? 'none' : 'flex';
-        // Note: A dedicated group call button is not in the HTML, but this logic supports it.
-        // document.getElementById('group-video-call-btn').style.display = isGroup ? 'flex' : 'none';
-    }
-}
-
-async function handleInitiateCall() {
-    if (!currentChatId || videoCallState.isActive || videoCallState.isAwaitingResponse) return;
-
-    const chat = (currentChatType === 'private')
-        ? db.characters.find(c => c.id === currentChatId)
-        : db.groups.find(g => g.id === currentChatId);
-    
-    videoCallState.isGroupCall = currentChatType === 'group';
-    videoCallState.isAwaitingResponse = true;
-    videoCallState.initiator = 'user';
-    videoCallState.activeChatId = chat.id;
-    videoCallState.isUserParticipating = true;
-
-    if (videoCallState.isGroupCall) {
-        // For now, group call UI is simplified
-        getEl('outgoing-call-avatar').src = chat.avatar;
-        getEl('outgoing-call-name').textContent = chat.name;
-        getEl('outgoing-call-screen').querySelector('.caller-text').textContent = "正在呼叫群成员...";
-    } else {
-        getEl('outgoing-call-avatar').src = chat.avatar;
-        getEl('outgoing-call-name').textContent = chat.remarkName;
-        getEl('outgoing-call-screen').querySelector('.caller-text').textContent = "正在等待对方接听...";
-    }
-    
-    switchScreen('outgoing-call-screen');
-
-    const assignedMe = db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0];
-    const callType = '视频'; // or '语音'
-    const requestMessage = {
-        role: 'system',
-        content: `[system: ${assignedMe.myName} 正在尝试向你发起${callType}通话。请在下一条消息中回应，你的回复必须是"[${chat.realName}已接听通话]"或"[${chat.realName}已拒接通话]"中的一个。]`,
-        timestamp: Date.now(),
-    };
-    chat.history.push(requestMessage);
-    saveData();
-    
-    // Simulate AI decision after a realistic delay
-    const delay = Math.random() * 2000 + 2000; // 2-4 seconds
-    setTimeout(() => {
-        if (!videoCallState.isAwaitingResponse) return; // Call was already cancelled by user
-
-        const decision = Math.random() > 0.1 ? '已接听通话' : '已拒接通话'; // 90% chance to accept
-        const aiResponse = {
-            id: `msg_call_${Date.now()}`,
-            role: 'assistant',
-            content: `[${chat.realName}${decision}]`,
-            timestamp: Date.now()
-        };
-        chat.history.push(aiResponse);
-        saveData();
-        handleAiCallResponse();
-    }, delay);
-}
-
-function handleAiCallResponse() {
-    const chat = db.characters.find(c => c.id === videoCallState.activeChatId);
-    if (!chat || !videoCallState.isAwaitingResponse) return;
-
-    const lastMessage = chat.history[chat.history.length - 1];
-    if (lastMessage && lastMessage.role === 'assistant') {
-        if (lastMessage.content.includes('已接听通话')) {
-            videoCallState.isAwaitingResponse = false;
-            startVideoCall();
-        } else if (lastMessage.content.includes('已拒接通话')) {
-            sendSystemNotification(chat, '对方已拒接');
-            resetCallState();
-            switchScreen('chat-room-screen');
-        }
-    } else {
-        // Fallback timeout if something goes wrong
-        setTimeout(() => {
-            if (videoCallState.isAwaitingResponse) {
-                sendSystemNotification(chat, '对方无应答');
-                resetCallState();
-                switchScreen('chat-room-screen');
-            }
-        }, 8000); // 8 second timeout from initial call
-    }
-}
-
-function startVideoCall() {
-    videoCallState.isActive = true;
-    videoCallState.startTime = Date.now();
-    videoCallState.callHistory = [];
-
-    const chat = (videoCallState.isGroupCall)
-        ? db.groups.find(g => g.id === videoCallState.activeChatId)
-        : db.characters.find(c => c.id === videoCallState.activeChatId);
-
-    if (chat) {
-        const preCallHistory = chat.history.filter(m => m.type !== 'system' && m.role !== 'system').slice(-10);
-        videoCallState.preCallContext = preCallHistory.map(msg => {
-            const sender = msg.role === 'user' ? (chat.me?.nickname || (db.meProfiles.find(p=>p.id === chat.assignedMeId) || {}).myName) : (chat.members?.find(m=>m.id===msg.senderId)?.groupNickname || chat.remarkName);
-            const content = msg.content.replace(/\[.*?的消息：([\s\S]+?)\]/, '$1');
-            return `${sender}: ${content.substring(0, 50)}...`;
-        }).join('\n');
-    }
-
-    updateParticipantAvatars();
-    getEl('video-call-main').innerHTML = `<em style="align-self: center; color: #aaa;">通话开始...</em>`;
-    switchScreen('video-call-screen');
-    
-    if (callTimerInterval) clearInterval(callTimerInterval);
-    callTimerInterval = setInterval(updateCallTimer, 1000);
-    updateCallTimer();
-
-    triggerAiInCallAction("[系统提示：通话已连接]");
-}
-
-function endVideoCall() {
-    if (!videoCallState.isActive) return;
-
-    const duration = Math.floor((Date.now() - videoCallState.startTime) / 1000);
-    const durationText = `${Math.floor(duration / 60)}分${duration % 60}秒`;
-    
-    const chat = (videoCallState.isGroupCall)
-        ? db.groups.find(g => g.id === videoCallState.activeChatId)
-        : db.characters.find(c => c.id === videoCallState.activeChatId);
-
-    if (chat) {
-        sendSystemNotification(chat, `通话结束，时长 ${durationText}`);
-        
-        const callTranscript = videoCallState.callHistory.map(h => `${h.role}: ${h.content}`).join('\n');
-        const summaryPrompt = {
-            role: 'system',
-            content: `[system: 视频通话刚刚结束。通话记录如下：\n${callTranscript}\n请根据通话内容，自然地在聊天中进行总结或回应。]`,
-            timestamp: Date.now() + 1
-        };
-        chat.history.push(summaryPrompt);
-        saveData();
-        
-        setTimeout(() => getAiReply(), 1000);
-    }
-
-    resetCallState();
-    switchScreen('chat-room-screen');
-}
-
-
-function resetCallState() {
-    clearInterval(callTimerInterval);
-    callTimerInterval = null;
-    videoCallState = {
-        isActive: false,
-        isAwaitingResponse: false,
-        isGroupCall: false,
-        activeChatId: null,
-        initiator: null,
-        startTime: null,
-        participants: [],
-        isUserParticipating: true,
-        callHistory: [],
-        preCallContext: "",
-        callRequester: null,
-    };
-}
-
-
-function updateParticipantAvatars() {
-    const grid = getEl('participant-avatars-grid');
-    grid.innerHTML = '';
-    const chat = (videoCallState.isGroupCall)
-        ? db.groups.find(g => g.id === videoCallState.activeChatId)
-        : db.characters.find(c => c.id === videoCallState.activeChatId);
+function startCall(type) {
+    const chat = db.characters.find(c => c.id === currentChatId);
     if (!chat) return;
     
-    let participantsToRender = [];
-
-    if (videoCallState.isGroupCall) {
-        participantsToRender = [...videoCallState.participants]; // Placeholder for AI joining
-        if (videoCallState.isUserParticipating) {
-            participantsToRender.unshift({
-                id: 'user',
-                name: chat.me.nickname || '我',
-                avatar: chat.me.avatar
-            });
-        }
-    } else {
-        const me = db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0];
-        if (videoCallState.isUserParticipating) {
-            participantsToRender.push({ id: 'user', name: me.myName, avatar: me.myAvatar });
-        }
-        participantsToRender.push({ id: 'ai', name: chat.remarkName, avatar: chat.avatar });
-    }
-
-    participantsToRender.forEach(p => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'participant-avatar-wrapper';
-        wrapper.dataset.participantId = p.id;
-        wrapper.innerHTML = `
-            <img src="${p.avatar}" class="participant-avatar" alt="${p.name}">
-            <div class="participant-name">${p.name}</div>`;
-        grid.appendChild(wrapper);
-    });
-}
-
-async function triggerAiInCallAction(userInput = null) {
-    if (!videoCallState.isActive) return;
-
-    const chat = (videoCallState.isGroupCall)
-        ? db.groups.find(g => g.id === videoCallState.activeChatId)
-        : db.characters.find(c => c.id === videoCallState.activeChatId);
+    getEl('call-screen-avatar').src = chat.avatar;
+    getEl('call-screen-name').textContent = chat.remarkName;
+    getEl('call-screen-overlay').classList.add('visible');
     
-    if (userInput) {
-        videoCallState.callHistory.push({ role: 'user', content: userInput });
-    }
+    const assignedMe = db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0];
+    const callType = type === 'video' ? '视频' : '语音';
     
-    const me = videoCallState.isGroupCall ? chat.me : (db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0]);
-    const prompt = `你现在是一个场景描述引擎。你正在扮演 ${chat.remarkName} (人设: ${chat.persona})，并以【第三人称旁观视角】来描述TA在和 ${me.myName} 的视频通话中的所有动作和语言。
-【视角铁律】: 绝对不能使用第一人称“我”。必须使用第三人称，如“他”、“她”、或直接使用角色名“${chat.remarkName}”。
-【情景】: 通话前的聊天摘要: ${videoCallState.preCallContext || '无'}
----
-【实时通话记录】:
-${videoCallState.callHistory.map(h => `${h.role === 'user' ? me.myName : chat.remarkName}: ${h.content}`).join('\n')}
----
-现在，请你生成下一段 ${chat.remarkName} 的动作和发言。`;
-
-    const aiResponse = await getAiReply(prompt);
-    if (aiResponse) {
-        const callFeed = getEl('video-call-main');
-        const aiBubble = document.createElement('div');
-        aiBubble.className = 'call-message-bubble ai-speech';
-        aiBubble.textContent = aiResponse;
-        callFeed.appendChild(aiBubble);
-        callFeed.scrollTop = callFeed.scrollHeight;
-        videoCallState.callHistory.push({ role: 'assistant', content: aiResponse });
-
-        const speakingAvatar = document.querySelector(`.participant-avatar-wrapper[data-participant-id="ai"] .participant-avatar`);
-        if(speakingAvatar) {
-            speakingAvatar.classList.add('speaking');
-            setTimeout(() => speakingAvatar.classList.remove('speaking'), 2000);
-        }
-    }
-}
-
-function updateCallTimer() {
-    if (!videoCallState.isActive || !videoCallState.startTime) return;
-    const elapsed = Math.floor((Date.now() - videoCallState.startTime) / 1000);
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    getEl('call-timer').textContent = `${pad(minutes)}:${pad(seconds)}`;
+    const systemMessage = {
+        id: `msg_system_${Date.now()}`,
+        role: 'system',
+        content: `[system: ${assignedMe.myName}正在尝试向你发起${callType}通话。你现在无法接听，请在下一条消息中以文字形式回应这个呼叫。]`,
+        timestamp: Date.now()
+    };
+    chat.history.push(systemMessage);
+    saveData();
+    
+    // 让AI在短暂延迟后回应
+    setTimeout(() => {
+        getAiReply();
+    }, 2000);
 }
 
 
@@ -5890,17 +5340,11 @@ function setupGroupChatSettings() {
     }
     function renderInviteSelectionList() { const list = getEl('invite-member-selection-list'); list.innerHTML = ''; const group = db.groups.find(g => g.id === currentChatId); if (!group) return; const currentMemberCharIds = new Set(group.members.map(m => m.originalCharId)); const availableChars = db.characters.filter(c => !currentMemberCharIds.has(c.id)); if (availableChars.length === 0) { list.innerHTML = '<li style="color:#aaa; text-align:center; padding: 10px 0;">没有可邀请的新成员了。</li>'; getEl('confirm-invite-btn').disabled = true; return; } getEl('confirm-invite-btn').disabled = false; list.innerHTML = availableChars.map(char => `<li class="invite-member-select-item"><input type="checkbox" id="invite-select-${char.id}" value="${char.id}"><label for="invite-select-${char.id}"><img src="${char.avatar}" alt="${char.remarkName}"><span>${char.remarkName}</span></label></li>`).join(''); }
     
-    function sendSystemNotification(chat, text) {
-        const message = {
-            id: `msg_system_${Date.now()}`,
-            type: 'system', // Differentiate system messages
-            role: 'system', // For API compatibility, but we'll use 'type' for rendering
-            content: text,
-            timestamp: Date.now()
-        };
-        chat.history.push(message);
+    function sendSystemNotification(group, text) {
+        const message = { id: `msg_system_${Date.now()}`, role: 'system', content: `[${text}]`, timestamp: Date.now() };
+        group.history.push(message);
         saveData();
-        if (chat.id === currentChatId) {
+        if (group.id === currentChatId) {
             addMessageBubble(message);
         }
     }
