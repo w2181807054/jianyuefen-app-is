@@ -49,9 +49,28 @@
             overflow: hidden; position: relative;
             display: flex; flex-direction: column;
         }
-        .screen { display: none; flex-direction: column; width: 100%; height: 100%; animation: fadeIn 0.5s ease; }
-        .screen.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .screen {
+         display: flex;
+         flex-direction: column;
+         width: 100%;
+         height: 100%;
+         position: absolute;
+          top: 0;
+         left: 0;
+         opacity: 0;
+         visibility: hidden;
+         transform: scale(0.95);
+         transition: opacity 0.4s ease, visibility 0.4s, transform 0.4s ease;
+         z-index: 1;
+        }
+        .screen.active {
+          opacity: 1;
+         visibility: visible;
+         transform: scale(1);
+         z-index: 2;
+        }
+
 
         @keyframes click-effect {
             0% { transform: scale(1); }
@@ -1691,6 +1710,21 @@
         #outgoing-call-screen {
             justify-content: center; align-items: center; text-align: center;
         }
+        .outgoing-call-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .outgoing-call-actions {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #e0e0e0;
+        }
         #video-call-screen {
             display: flex; flex-direction: column; overflow: hidden; position: relative;
         }
@@ -1796,6 +1830,7 @@
         <div id="sticker-actionsheet" class="action-sheet-overlay"></div>
         <div id="send-voice-modal" class="modal-overlay"></div>
         <div id="send-pv-modal" class="modal-overlay"></div>
+        <div id="send-camera-modal" class="modal-overlay"></div>
         <div id="send-transfer-modal" class="modal-overlay"></div>
         <div id="send-gift-modal" class="modal-overlay"></div>
         <div id="receive-transfer-actionsheet" class="action-sheet-overlay"></div>
@@ -1974,6 +2009,7 @@ function injectHTML() {
         'sticker-actionsheet': `<div class="action-sheet"><button class="action-sheet-button" id="edit-sticker-btn">编辑</button><button class="action-sheet-button danger" id="delete-sticker-btn">删除</button></div>`,
         'send-voice-modal': `<div class="modal-window"><h3>发送语音消息</h3><form id="send-voice-form"><div class="form-group"><label for="voice-text-input">输入语音文字</label><textarea id="voice-text-input" placeholder="在这里输入你想说的话..." required rows="4"></textarea></div><div class="form-group" style="text-align:center; color:#888; font-size: 14px;">预计时长: <span id="voice-duration-preview">0"</span></div><button type="submit" class="btn btn-primary">发送</button></form></div>`,
         'send-pv-modal': `<div class="modal-window"><h3>分享照片/视频</h3><form id="send-pv-form"><div class="form-group"><label for="pv-text-input">输入描述</label><textarea id="pv-text-input" placeholder="在这里描述你的照片或视频内容..." required rows="4"></textarea></div><button type="submit" class="btn btn-primary">发送</button></form></div>`,
+        'send-camera-modal': `<div class="modal-window"><h3>拍摄</h3><form id="send-camera-form"><div class="form-group"><label for="camera-text-input">输入描述</label><textarea id="camera-text-input" placeholder="在这里描述你拍摄的场景..." required rows="4"></textarea></div><button type="submit" class="btn btn-primary">发送</button></form></div>`,
         'send-transfer-modal': `<div class="modal-window"><h3 id="send-transfer-title">转账</h3><form id="send-transfer-form"><div class="form-group" id="transfer-recipient-group" style="display:none;"><label for="transfer-recipient-name">转给</label><input type="text" id="transfer-recipient-name" readonly></div><div class="form-group"><label for="transfer-amount-input">金额 (元)</label><input type="number" id="transfer-amount-input" placeholder="0.00" required step="0.01" min="0.01"></div><div class="form-group"><label for="transfer-remark-input">备注</label><input type="text" id="transfer-remark-input" placeholder="（选填）"></div><button type="submit" class="btn btn-primary">发送</button></form></div>`,
         'send-gift-modal': `<div class="modal-window"><h3>送出礼物</h3><form id="send-gift-form"><div class="form-group"><label for="gift-description-input">礼物描述</label><textarea id="gift-description-input" placeholder="告诉Ta你送了什么特别的东西..." required rows="4"></textarea></div><button type="submit" class="btn btn-primary">发送</button></form></div>`,
         'receive-transfer-actionsheet': `<div class="action-sheet"><button class="action-sheet-button" id="accept-transfer-btn">接收</button><button class="action-sheet-button danger" id="return-transfer-btn">退回</button></div>`,
@@ -2536,6 +2572,7 @@ const init = () => {
     setupStickerSystem();
     setupVoiceMessageSystem();
     setupPhotoVideoSystem();
+    setupCameraSystem();
     setupWalletSystem();
     setupGiftSystem();
     setupWorldBookApp();
@@ -2548,8 +2585,8 @@ const init = () => {
     setupMomentPosting();
     setupPatPatFeature();
     setupLocationFeature();
-    setupVideoCallSystem();
     renderPlusMenu();
+    setupVideoCallSystem();
 };
 
 function updateClock() { 
@@ -2925,7 +2962,7 @@ function renderChatList() {
         if (chat.history?.length > 0) {
             const lastMsg = chat.history.filter(msg => {
                 const content = msg.content || '';
-                return !/^\[(system:|.*?拉黑|.*?解除拉黑|.*?邀请.*?加入了群聊|.*?修改群名为|.*?接收|.*?退回|.*?已接收礼物|.*?领取了.*?的红包|.*?移出了群聊|.*?将.+设置为管理员|.*?撤销了.+的管理员)\]$/.test(content);
+                return !/^\[(system:|.*?拉黑|.*?解除拉黑|.*?邀请.*?加入了群聊|.*?修改群名为|.*?接收|.*?退回|.*?已接收礼物|.*?领取了.*?的红包|.*?移出了群聊|.*?将.+设置为管理员|.*?撤销了.+的管理员)\]$/.test(content) && !msg.isHidden;
             }).pop();
             if (lastMsg) {
                  const content = lastMsg.content || '';
@@ -3362,12 +3399,11 @@ function toggleStickerModal(forceState) {
             
             switch (item.id) {
                 case 'photo-video-btn':
-                    // **FIX**: Restore original functionality
-                    getEl('send-pv-form').reset();
-                    getEl('send-pv-modal').classList.add('visible');
+                    getEl('image-upload-input').click();
                     break;
                 case 'camera-btn':
-                    showToast(`功能“${item.querySelector('span').textContent}”正在开发中...`);
+                    getEl('send-camera-form').reset();
+                    getEl('send-camera-modal').classList.add('visible');
                     break;
                 case 'voice-message-btn':
                     getEl('send-voice-form').reset();
@@ -3401,7 +3437,7 @@ function toggleStickerModal(forceState) {
         const messageId = messageWrapper.dataset.id;
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const message = chat.history.find(m => m.id === messageId);
-        if (!message || message.isRetracted) return;
+        if (!message || message.isRetracted || message.isHidden) return;
 
         const isInvisibleMessage = /\[(system:|.*?拉黑|.*?解除拉黑|.*?邀请|.*?修改群名为|.*?接收|.*?退回|.*?已接收礼物|.*?领取了.*?的红包|.*?移出了群聊|.*?将.+设置为管理员|.*?撤销了.+的管理员|.*?拍了拍.*?)\]/.test(message.content);
         if (isInvisibleMessage) return;
@@ -3573,7 +3609,7 @@ function toggleStickerModal(forceState) {
         updateSendAiButtonState();
         currentPage = 1;
 
-        const theme = chat.theme === 'custom' 
+                const theme = chat.theme === 'custom' 
             ? chat.customTheme 
             : (colorThemesV2[chat.theme] || colorThemesV2['default']);
         
@@ -3597,11 +3633,17 @@ function toggleStickerModal(forceState) {
         if (!chat || !chat.history) return;
         const messageArea = getEl('message-area');
         const oldScrollHeight = messageArea.scrollHeight;
-        const totalMessages = chat.history.length;
+        
+        // Filter out hidden system messages before rendering
+        const visibleHistory = chat.history.filter(msg => !msg.isHidden);
+        
+        const totalMessages = visibleHistory.length;
         const end = totalMessages - (currentPage - 1) * MESSAGES_PER_PAGE;
         const start = Math.max(0, end - MESSAGES_PER_PAGE);
-        const messagesToRender = chat.history.slice(start, end);
+        const messagesToRender = visibleHistory.slice(start, end);
+
         if (!isLoadMore) messageArea.innerHTML = '';
+        
         const fragment = document.createDocumentFragment();
         messagesToRender.forEach(msg => { const bubble = createMessageBubbleElement(msg); if(bubble) fragment.appendChild(bubble); });
         
@@ -3629,6 +3671,8 @@ function toggleStickerModal(forceState) {
     function calculateVoiceDuration(text) { return Math.max(1, Math.min(60, Math.ceil(text.length / 3.5))); }
     
     function createMessageBubbleElement(message) {
+        if (message.isHidden) return null; // Do not render hidden messages
+
         if (message.isRetracted) {
             const wrapper = document.createElement('div');
             wrapper.className = 'message-wrapper system-notification';
@@ -3641,7 +3685,7 @@ function toggleStickerModal(forceState) {
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const { role, content, timestamp, id, transferStatus, giftStatus, stickerData, senderId, replyTo, transferInfo, locationData } = message;
         
-        const systemRegex = /^\[(.*?(?:邀请.*?加入了群聊|修改群名为：.*?|已将.*?拉黑|已将.*?解除拉黑|领取了.*?的红包|移出了群聊|将.+设置为管理员|撤销了.+的管理员|拍了拍.+))\]$/;
+        const systemRegex = /^\[(.*?(?:邀请.*?加入了群聊|修改群名为：.*?|已将.*?拉黑|已将.*?解除拉黑|领取了.*?的红包|移出了群聊|将.+设置为管理员|撤销了.+的管理员|拍了拍.+|通话结束，时长.+))\]$/;
         const systemMatch = content.match(systemRegex);
         
         const htmlCardMatch = content.match(/^\[html_card:([\s\S]+)\]$/);
@@ -3835,6 +3879,8 @@ function toggleStickerModal(forceState) {
     }
     
     function addMessageBubble(message) {
+        if (message.isHidden) return; // Do not add hidden messages to the DOM
+        
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         if (!chat) return;
 
@@ -4009,6 +4055,21 @@ function toggleStickerModal(forceState) {
         renderChatList(); 
         getEl('send-pv-modal').classList.remove('visible'); 
     }
+    
+    function sendCameraMessage(text) {
+        if (!text) return;
+        const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
+        const assignedMe = (currentChatType === 'private') ? db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0] : { myName: chat.me.nickname };
+        const myName = assignedMe.myName;
+        // For simplicity, we'll use the same content format as photo/video
+        const message = { id: `msg_${Date.now()}`, role: 'user', content: `[${myName}发来的照片\/视频：${text}]`, timestamp: Date.now() };
+        if (currentChatType === 'group') message.senderId = 'user_me';
+        chat.history.push(message);
+        addMessageBubble(message);
+        saveData();
+        renderChatList();
+        getEl('send-camera-modal').classList.remove('visible');
+    }
 
     function sendMyTransfer(amount, remark, recipient = null) { 
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
@@ -4107,7 +4168,7 @@ async function extractAndStoreMemory(characterId, chatType, groupContext = null)
     if (isGroup) {
         const group = groupContext;
         assignedMe = db.meProfiles.find(p => p.id === group.me.profileId) || db.meProfiles[0];
-        chatHistoryText = group.history
+        chatHistoryText = group.history.filter(m => !m.isHidden)
             .map(msg => {
                 let sender, content;
                 if (msg.senderId === 'user_me') {
@@ -4124,7 +4185,7 @@ async function extractAndStoreMemory(characterId, chatType, groupContext = null)
     } else {
         const privateChat = db.characters.find(c => c.id === character.id);
         assignedMe = db.meProfiles.find(p => p.id === privateChat.assignedMeId) || db.meProfiles[0];
-        chatHistoryText = privateChat.history
+        chatHistoryText = privateChat.history.filter(m => !m.isHidden)
             .map(msg => {
                 let sender, content;
                 if(msg.role === 'user') {
@@ -4354,23 +4415,28 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
 
     try {
         let systemPrompt, messagesToSend;
+        let openaiPayload = {}; 
         if (isInternalCall) {
             systemPrompt = customPrompt;
             messagesToSend = messages || [];
         } else if (chat) {
              systemPrompt = (currentChatType === 'private') ? generatePrivateSystemPrompt(chat) : generateGroupSystemPrompt(chat);
-             messagesToSend = chat.history.slice(-(chat.maxMemory || 10)).map(m => ({ role: m.role, content: m.content }));
+             messagesToSend = chat.history.filter(m => !m.isHidden).slice(-(chat.maxMemory || 10)).map(m => ({ role: m.role, content: m.content }));
         }
        
         let payloadMessages = [{ role: 'system', content: systemPrompt }, ...messagesToSend];
         let response;
         const stream = !isInternalCall && !imageBase64;
         
-        // Handle Gemini Vision
+        if (isInternalCall && customPrompt.includes("视频通话请求")) {
+            if (provider !== 'gemini') {
+                 openaiPayload.response_format = { "type": "json_object" };
+            }
+        }
+        
         if (imageBase64 && provider === 'gemini') {
             const lastUserMessage = payloadMessages[payloadMessages.length - 1];
             if (lastUserMessage.role === 'user') {
-                 // Create Gemini specific vision payload
                  const geminiContents = payloadMessages.slice(0, -1).map(m => ({ 
                     role: m.role === 'assistant' ? 'model' : 'user', 
                     parts: [{ text: m.content }] 
@@ -4379,7 +4445,7 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
                 geminiContents.push({
                     role: 'user',
                     parts: [
-                        { text: "[图片描述：请描述这张图片，并根据我们的关系和你的角色设定进行回应。]" },
+                        { text: `[${(chat.me?.nickname || '我')}的消息：图片] [图片描述：请描述这张图片，并根据我们的关系和你的角色设定进行回应。]` },
                         { inline_data: { mime_type: "image/jpeg", data: imageBase64.split(',')[1] } }
                     ]
                 });
@@ -4401,7 +4467,7 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
                  const fetchUrl = stream ? `${url}/v1beta/models/${model}:streamGenerateContent?key=${key}` : `${url}/v1beta/models/${model}:generateContent?key=${key}`;
                  response = await fetch(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload) });
             } else {
-                const openaiPayload = { model, messages: payloadMessages, stream };
+                openaiPayload = { ...openaiPayload, model, messages: payloadMessages, stream };
                 response = await fetch(`${url}/v1/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: JSON.stringify(openaiPayload) });
             }
         }
@@ -4722,7 +4788,6 @@ async function processStream(response, chat, apiType) {
     function setupVoiceMessageSystem() { getEl('send-voice-modal').addEventListener('click', (e) => { if (e.target === getEl('send-voice-modal')) getEl('send-voice-modal').classList.remove('visible'); }); getEl('voice-text-input').addEventListener('input', (e) => { getEl('voice-duration-preview').textContent = `${calculateVoiceDuration(e.target.value)}"`; }); getEl('send-voice-form').addEventListener('submit', (e) => { e.preventDefault(); sendMyVoiceMessage(getEl('voice-text-input').value.trim()); }); }
     
     function setupPhotoVideoSystem() { 
-        // This input is now only for direct image sending
         getEl('image-upload-input').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if(file){
@@ -4735,10 +4800,16 @@ async function processStream(response, chat, apiType) {
             }
         });
 
-        // This form is for sending photo/video with description
         getEl('send-pv-form').addEventListener('submit', (e) => {
             e.preventDefault();
             sendMyPhotoVideo(getEl('pv-text-input').value.trim());
+        });
+    }
+
+    function setupCameraSystem() {
+        getEl('send-camera-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendCameraMessage(getEl('camera-text-input').value.trim());
         });
     }
     
@@ -5007,20 +5078,12 @@ function setupLocationFeature() {
 }
 
 function setupVideoCallSystem() {
-    // Event listeners for initiating a call
-    document.getElementById('video-call-btn').addEventListener('click', () => handleInitiateCall());
-    
-    // Event listeners for incoming call modal
-    document.getElementById('accept-call-btn').addEventListener('click', acceptIncomingCall);
-    document.getElementById('decline-call-btn').addEventListener('click', declineIncomingCall);
-
-    // Event listener for cancelling an outgoing call
-    document.getElementById('cancel-outgoing-call-btn').addEventListener('click', endVideoCall);
-    
-    // Event listeners for in-call controls
-    document.getElementById('video-call-hangup-btn').addEventListener('click', endVideoCall);
-    document.getElementById('video-call-send-btn').addEventListener('click', sendVideoCallMessage);
-    document.getElementById('video-call-user-input').addEventListener('keypress', (e) => {
+    getEl('accept-call-btn').addEventListener('click', acceptIncomingCall);
+    getEl('decline-call-btn').addEventListener('click', declineIncomingCall);
+    getEl('cancel-outgoing-call-btn').addEventListener('click', () => endVideoCall(true));
+    getEl('video-call-hangup-btn').addEventListener('click', () => endVideoCall(false));
+    getEl('video-call-send-btn').addEventListener('click', sendVideoCallMessage);
+    getEl('video-call-user-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             sendVideoCallMessage();
@@ -5057,40 +5120,87 @@ async function handleInitiateCall() {
 
     const requestMessage = {
         role: 'system',
-        content: `[系统提示：用户 ${me.myName}向你发起了视频通话请求。请使用 "video_call_response" 指令，并设置 "decision" 为 "accept" 或 "reject" 来回应。]`,
+        content: `[系统提示：用户 ${me.myName}向你发起了视频通话请求。请根据你的人设，只回复一个包含JSON对象的数组。接受：[{"type": "video_call_response", "decision": "accept"}] 或 拒绝：[{"type": "video_call_response", "decision": "reject"}]]`,
         timestamp: Date.now(),
         isHidden: true,
     };
+    
+    // For groups, we need a different prompt and handling
+    if (videoCallState.isGroupCall) {
+        requestMessage.content = `[系统提示：用户 (${me.myName}) 发起了群视频通话请求。请你们各自决策，并使用 "group_call_response" 指令，在 "decision" 字段中设置为 "join" 或 "decline" 来回应。]`;
+    }
+    
     chat.history.push(requestMessage);
     saveData();
     
-    // Wait for AI to decide
-    const decisionResponse = await getAiReply(null, [requestMessage]);
+    const decisionResponse = await getAiReply(requestMessage.content, [requestMessage]);
     
-    if (videoCallState.isAwaitingResponse) { // Check if user hasn't cancelled
-        handleAiCallDecision(decisionResponse);
+    if (videoCallState.isAwaitingResponse) { 
+        if (videoCallState.isGroupCall) {
+            handleAiGroupCallDecision(decisionResponse);
+        } else {
+            handleAiCallDecision(decisionResponse);
+        }
     }
 }
 function handleAiCallDecision(response) {
     if (!response) {
         showToast("对方无应答。");
-        endVideoCall();
+        endVideoCall(true);
         return;
     }
     
     try {
-        const decisionData = JSON.parse(response);
+        const cleanedResponse = response.replace(/```json|```/g, '').trim();
+        const decisionData = JSON.parse(cleanedResponse);
         const decision = Array.isArray(decisionData) ? decisionData[0] : decisionData;
 
         if (decision.type === 'video_call_response' && decision.decision === 'accept') {
+            const chat = db.characters.find(c => c.id === videoCallState.activeChatId);
+            videoCallState.participants.push({ id: chat.id, name: chat.realName, avatar: chat.avatar });
             startVideoCall();
         } else {
             showToast("对方拒绝了通话请求。");
-            endVideoCall();
+            endVideoCall(true);
         }
     } catch (e) {
-        showToast("对方响应格式错误，无法建立通话。");
-        endVideoCall();
+        console.error("AI通话决策解析失败:", e, "原始回复:", response);
+        showToast("对方响应异常，无法建立通话。");
+        endVideoCall(true);
+    }
+}
+
+function handleAiGroupCallDecision(response) {
+    if (!response) {
+        showToast("群成员均未响应。");
+        endVideoCall(true);
+        return;
+    }
+
+    try {
+        const cleanedResponse = response.replace(/```json|```/g, '').trim();
+        const decisions = JSON.parse(cleanedResponse);
+        const group = db.groups.find(g => g.id === videoCallState.activeChatId);
+
+        decisions.forEach(decision => {
+            if (decision.type === 'group_call_response' && decision.decision === 'join') {
+                const member = group.members.find(m => m.realName === decision.participant);
+                if (member && !videoCallState.participants.some(p => p.id === member.id)) {
+                    videoCallState.participants.push({ id: member.id, name: member.realName, groupNickname: member.groupNickname, avatar: member.avatar });
+                }
+            }
+        });
+
+        if (videoCallState.participants.length > 0) {
+            startVideoCall();
+        } else {
+            showToast("无人加入通话。");
+            endVideoCall(true);
+        }
+    } catch (e) {
+        console.error("AI群聊通话决策解析失败:", e, "原始回复:", response);
+        showToast("群成员响应异常，无法建立通话。");
+        endVideoCall(true);
     }
 }
 
@@ -5105,10 +5215,10 @@ function startVideoCall() {
         callHistory: []
     });
     
-    const preCallHistory = chat.history.slice(-10);
+    const preCallHistory = chat.history.filter(m => !m.isHidden).slice(-10);
     videoCallState.preCallContext = preCallHistory.map(msg => {
-        const sender = msg.role === 'user' ? (chat.me?.nickname || '我') : (msg.senderName || chat.remarkName);
-         const contentMatch = msg.content.match(/\[.*?的消息：([\s\S]+?)\]/);
+        const sender = msg.role === 'user' ? (chat.me?.nickname || '我') : (msg.senderName || chat.remarkName || '成员');
+        const contentMatch = msg.content.match(/\[.*?的消息：([\s\S]+?)\]/);
         const text = contentMatch ? contentMatch[1] : msg.content;
         return `${sender}: ${text.substring(0, 50)}...`;
     }).join('\n');
@@ -5121,22 +5231,26 @@ function startVideoCall() {
     callTimerInterval = setInterval(updateCallTimer, 1000);
     updateCallTimer();
 
-    // Initial AI action
     triggerAiInCallAction();
 }
 
-async function endVideoCall() {
-    if (!videoCallState.activeChatId) {
-        // This case handles cancelling an outgoing call before it's connected
+async function endVideoCall(isCallFailed = false) {
+    if (isCallFailed || videoCallState.isAwaitingResponse) {
         Object.assign(videoCallState, { isActive: false, isAwaitingResponse: false, activeChatId: null, initiator: null });
-        switchScreen('chat-room-screen');
+        if(currentChatId && currentChatType) {
+            openChatRoom(currentChatId, currentChatType);
+        } else {
+            switchScreen('chat-list-screen');
+        }
         return;
     }
+
+    if (!videoCallState.isActive) return;
 
     const duration = Math.floor((Date.now() - videoCallState.startTime) / 1000);
     const durationText = `${String(Math.floor(duration / 60)).padStart(2, '0')}:${String(duration % 60).padStart(2, '0')}`;
     
-    const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
+    const chat = (videoCallState.isGroupCall) ? db.groups.find(g => g.id === videoCallState.activeChatId) : db.characters.find(c => c.id === videoCallState.activeChatId);
     if (chat) {
         const endCallMessage = {
             id: `msg_system_${Date.now()}`,
@@ -5146,19 +5260,22 @@ async function endVideoCall() {
         };
         chat.history.push(endCallMessage);
         
-        // Append call transcript to memory
-        const transcriptText = videoCallState.callHistory.map(h => `${h.role === 'user' ? '我' : (h.senderName || chat.remarkName)}: ${h.content}`).join('\n');
+        const transcriptText = videoCallState.callHistory.map(h => `${h.senderName}: ${h.content}`).join('\n');
         if (transcriptText) {
-            let memoryEntry = db.memoryEntries.find(m => m.characterId === chat.id);
-            if(memoryEntry) {
-                memoryEntry.content += `\n\n--- ${new Date().toLocaleString()}的通话记录 ---\n${transcriptText}`;
+            let memoryTargetId = videoCallState.isGroupCall ? chat.id : chat.id;
+            let memoryEntry = db.memoryEntries.find(m => (m.characterId === memoryTargetId) || (m.groupId === memoryTargetId));
+            const newMemoryContent = `\n\n--- ${new Date().toLocaleString()}的视频通话记录 ---\n${transcriptText}`;
+
+            if (memoryEntry) {
+                memoryEntry.content += newMemoryContent;
             } else {
                  db.memoryEntries.push({
-                    id: `mem_char_${chat.id}`,
-                    type: 'character',
-                    characterId: chat.id,
-                    topic: chat.remarkName,
-                    content: `--- ${new Date().toLocaleString()}的通话记录 ---\n${transcriptText}`,
+                    id: `mem_${(videoCallState.isGroupCall ? 'group' : 'char')}_${memoryTargetId}`,
+                    type: videoCallState.isGroupCall ? 'group' : 'character',
+                    characterId: videoCallState.isGroupCall ? null : memoryTargetId,
+                    groupId: videoCallState.isGroupCall ? memoryTargetId : null,
+                    topic: `与 ${chat.name || chat.remarkName} 的通话`,
+                    content: newMemoryContent.trim(),
                     timestamp: Date.now()
                  });
             }
@@ -5167,27 +5284,34 @@ async function endVideoCall() {
         saveData();
     }
     
+    const endedChatId = videoCallState.activeChatId;
+    const endedChatType = videoCallState.isGroupCall ? 'group' : 'private';
+
     clearInterval(callTimerInterval);
     callTimerInterval = null;
     videoCallState = { isActive: false, isAwaitingResponse: false, isGroupCall: false, activeChatId: null, initiator: null, startTime: null, participants: [], isUserParticipating: true, callHistory: [], preCallContext: "" };
 
-    openChatRoom(chat.id, currentChatType);
+    openChatRoom(endedChatId, endedChatType);
 }
 
 function updateParticipantAvatars() {
     const grid = getEl('participant-avatars-grid');
     grid.innerHTML = '';
-    const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
+    const chat = (videoCallState.isGroupCall) ? db.groups.find(g => g.id === videoCallState.activeChatId) : db.characters.find(c => c.id === videoCallState.activeChatId);
     if (!chat) return;
 
-    const me = (currentChatType === 'private') 
-        ? db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0] 
-        : { myName: chat.me.nickname, myAvatar: chat.me.avatar };
-
-    const participantsToRender = [
-        { id: 'user', name: me.myName, avatar: me.myAvatar },
-        { id: 'ai', name: chat.remarkName || chat.name, avatar: chat.avatar }
-    ];
+    let participantsToRender = [];
+    if (videoCallState.isGroupCall) {
+        const me = { myName: chat.me.nickname, myAvatar: chat.me.avatar };
+        participantsToRender.push({ id: 'user', name: me.myName, avatar: me.myAvatar });
+        videoCallState.participants.forEach(p => {
+            participantsToRender.push({ id: p.id, name: p.groupNickname, avatar: p.avatar });
+        });
+    } else {
+        participantsToRender = [
+            { id: 'ai', name: chat.remarkName || chat.name, avatar: chat.avatar }
+        ];
+    }
 
     participantsToRender.forEach(p => {
         const wrapper = document.createElement('div');
@@ -5199,7 +5323,7 @@ function updateParticipantAvatars() {
 }
 
 function updateCallTimer() {
-    if (!videoCallState.isActive) return;
+    if (!videoCallState.isActive || !videoCallState.startTime) return;
     const elapsed = Math.floor((Date.now() - videoCallState.startTime) / 1000);
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
@@ -5214,69 +5338,109 @@ function sendVideoCallMessage() {
     const input = getEl('video-call-user-input');
     const text = input.value.trim();
     if (text) {
-        triggerAiInCallAction(text);
+        const chat = (videoCallState.isGroupCall) ? db.groups.find(g => g.id === videoCallState.activeChatId) : db.characters.find(c => c.id === videoCallState.activeChatId);
+        const me = { myName: chat.me?.nickname || '我' };
+
+        const callFeed = getEl('video-call-main');
+        const userBubble = document.createElement('div');
+        userBubble.className = 'call-message-bubble user-speech';
+        userBubble.textContent = text;
+        callFeed.appendChild(userBubble);
+        callFeed.scrollTop = callFeed.scrollHeight;
+        videoCallState.callHistory.push({ senderName: me.myName, content: text });
+        
+        triggerAiInCallAction();
         input.value = '';
     }
 }
 
-async function triggerAiInCallAction(userInput = null) {
+async function triggerAiInCallAction() {
     if (!videoCallState.isActive) return;
 
-    const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
+    const chat = (videoCallState.isGroupCall) ? db.groups.find(g => g.id === videoCallState.activeChatId) : db.characters.find(c => c.id === videoCallState.activeChatId);
     const callFeed = getEl('video-call-main');
-    const me = (currentChatType === 'private') 
-        ? db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0] 
-        : { myName: chat.me.nickname };
-        
-    if (userInput) {
-        const userBubble = document.createElement('div');
-        userBubble.className = 'call-message-bubble user-speech';
-        userBubble.textContent = userInput;
-        callFeed.appendChild(userBubble);
-        callFeed.scrollTop = callFeed.scrollHeight;
-        videoCallState.callHistory.push({ role: 'user', content: userInput });
-    }
+    const me = (videoCallState.isGroupCall) 
+        ? { myName: chat.me.nickname, myPersona: chat.me.persona } 
+        : db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0];
 
-    const aiPersona = chat.persona || "一个友好的人";
-    const myPersona = me.myPersona || "无特定人设";
-
-    const inCallPrompt = `
-        你现在是一个场景描述引擎。你的任务是扮演 ${chat.remarkName}（人设: ${aiPersona}），并以【第三人称旁观视角】来描述TA在视频通话中的所有动作和语言。
-        
+    let inCallPrompt;
+    if (videoCallState.isGroupCall) {
+        const participantDetails = videoCallState.participants.map(p => `- ${p.groupNickname} (人设: ${p.persona})`).join('\n');
+        inCallPrompt = `
+        你是一个群聊视频通话的导演。你的任务是扮演所有【除了用户以外】的AI角色，并以【第三人称旁观视角】来描述他们在通话中的所有动作和语言。
         # 核心规则
-        - **视角铁律**: 你的回复【绝对不能】使用第一人称“我”。必须使用第三人称，如“他”、“她”、或直接使用角色名“${chat.remarkName}”。
-        - **格式**: 你的回复【必须】是一段描述性的文本。
-        
+        - **视角铁律**: 你的回复【绝对不能】使用第一人称“我”。
+        - **互动性**: 你的描述必须紧密围绕用户的最新发言进行互动，不能脱离用户自己发展剧情。
+        - **简洁性**: 每次生成的总描述文字【不能超过200字】。
+        - **格式**: 你的回复【必须】是一个JSON数组，每个对象代表一个角色的发言，格式为：[{"name": "角色真名", "speech": "旁白描述"}, ...]
+        - **角色扮演**: 严格遵守每个角色的设定。
         # 当前情景
-        你正在和用户（${me.myName}，人设: ${myPersona}）进行视频通话。
-        **通话前的聊天摘要 (这是你们通话的原因，至关重要！):**
-        ${videoCallState.preCallContext}
-        
-        现在，请根据【通话前摘要】和下面的【通话实时记录】，继续进行对话。`;
+        你们正在“${chat.name}”群的视频通话中。
+        **通话前聊天摘要**: ${videoCallState.preCallContext}
+        **当前参与者**:
+        - ${me.myName} (用户, 人设: ${me.myPersona})
+        ${participantDetails}
+        现在，请根据【通话实时记录】，继续进行对话。`;
+
+    } else { // Single call
+        const aiPersona = chat.persona || "一个友好的人";
+        inCallPrompt = `
+        你现在是一个场景描述引擎。你的任务是扮演 ${chat.remarkName}（人设: ${aiPersona}），并以【第三人称旁观视角】来描述TA在视频通话中的所有动作和语言。
+        # 核心规则
+        - **视角铁律**: 你的回复【绝对不能】使用第一人称“我”。必须使用第三人称。
+        - **互动性**: 你的描述必须紧密围绕用户的最新发言进行互动，不能脱离用户自己发展剧情。
+        - **简洁性**: 你的描述【不能超过200字】。
+        - **格式**: 你的回复【必须】是一段描述性的文本。
+        # 当前情景
+        你正在和用户（${me.myName}，人设: ${me.myPersona}）进行视频通话。
+        **通话前聊天摘要**: ${videoCallState.preCallContext}
+        现在，请根据【通话实时记录】，继续进行对话。`;
+    }
 
     const messagesForApi = [
         { role: 'system', content: inCallPrompt },
-        ...videoCallState.callHistory.map(h => ({ role: h.role, content: h.content }))
+        ...videoCallState.callHistory.map(h => ({ role: 'user', content: `${h.senderName}: ${h.content}` }))
     ];
 
     try {
-        const aiResponse = await getAiReply(null, messagesForApi);
+        const aiResponse = await getAiReply(inCallPrompt, messagesForApi);
         if (aiResponse) {
             const connectingElement = callFeed.querySelector('em');
             if (connectingElement) connectingElement.remove();
 
-            const aiBubble = document.createElement('div');
-            aiBubble.className = 'call-message-bubble ai-speech';
-            aiBubble.textContent = aiResponse;
-            callFeed.appendChild(aiBubble);
-            callFeed.scrollTop = callFeed.scrollHeight;
-            videoCallState.callHistory.push({ role: 'assistant', senderName: chat.remarkName, content: aiResponse });
+            if(videoCallState.isGroupCall) {
+                const speechArray = JSON.parse(aiResponse.replace(/```json|```/g, ''));
+                speechArray.forEach(turn => {
+                    const member = videoCallState.participants.find(p => p.name === turn.name);
+                    if(!member) return;
 
-            const speakingAvatar = document.querySelector(`.participant-avatar-wrapper[data-participant-id="ai"] .participant-avatar`);
-            if(speakingAvatar) {
-                speakingAvatar.classList.add('speaking');
-                setTimeout(() => speakingAvatar.classList.remove('speaking'), 2000);
+                    const aiBubble = document.createElement('div');
+                    aiBubble.className = 'call-message-bubble ai-speech';
+                    aiBubble.innerHTML = `<strong>${member.groupNickname}:</strong> ${turn.speech}`;
+                    callFeed.appendChild(aiBubble);
+                    videoCallState.callHistory.push({ senderName: member.groupNickname, content: turn.speech });
+
+                    const speakingAvatar = document.querySelector(`.participant-avatar-wrapper[data-participant-id="${member.id}"] .participant-avatar`);
+                    if(speakingAvatar) {
+                        speakingAvatar.classList.add('speaking');
+                        setTimeout(() => speakingAvatar.classList.remove('speaking'), 2000);
+                    }
+                });
+
+            } else {
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'call-message-bubble ai-speech';
+                aiBubble.textContent = aiResponse;
+                callFeed.appendChild(aiBubble);
+                videoCallState.callHistory.push({ senderName: chat.remarkName, content: aiResponse });
+
+                const speakingAvatar = document.querySelector(`.participant-avatar-wrapper[data-participant-id="ai"] .participant-avatar`);
+                if(speakingAvatar) {
+                    speakingAvatar.classList.add('speaking');
+                    setTimeout(() => speakingAvatar.classList.remove('speaking'), 2000);
+                }
             }
+            callFeed.scrollTop = callFeed.scrollHeight;
         }
     } catch (error) {
         const errorBubble = document.createElement('div');
@@ -5320,39 +5484,6 @@ function setupLocationFeature() {
         }
     });
 }
-function setupCallFeature() {
-    getEl('call-screen-overlay').addEventListener('click', e => {
-        if(e.target.closest('#end-call-btn') || e.target.id === 'call-screen-overlay') {
-            getEl('call-screen-overlay').classList.remove('visible');
-        }
-    });
-}
-function startCall(type) {
-    const chat = db.characters.find(c => c.id === currentChatId);
-    if (!chat) return;
-    
-    getEl('call-screen-avatar').src = chat.avatar;
-    getEl('call-screen-name').textContent = chat.remarkName;
-    getEl('call-screen-overlay').classList.add('visible');
-    
-    const assignedMe = db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0];
-    const callType = type === 'video' ? '视频' : '语音';
-    
-    const systemMessage = {
-        id: `msg_system_${Date.now()}`,
-        role: 'system',
-        content: `[system: ${assignedMe.myName}正在尝试向你发起${callType}通话。你现在无法接听，请在下一条消息中以文字形式回应这个呼叫。]`,
-        timestamp: Date.now()
-    };
-    chat.history.push(systemMessage);
-    saveData();
-    
-    // 让AI在短暂延迟后回应
-    setTimeout(() => {
-        getAiReply();
-    }, 2000);
-}
-
 
 function showAssignModal(type, forGroup = false) {
     const modalId = forGroup ? 'assign-me-modal' : (type === 'char' ? 'assign-char-modal' : 'assign-me-modal');
@@ -5932,18 +6063,17 @@ function setupGroupChatSettings() {
 
         const now = Date.now();
         const frequencyMap = {
-            high: { min: 0.5, max: 2 }, // Adjusted for more frequent posting
-            medium: { min: 2, max: 6 }, // Adjusted
-            low: { min: 6, max: 12 }    // Adjusted
+            high: { min: 0.5, max: 2 }, 
+            medium: { min: 2, max: 6 }, 
+            low: { min: 6, max: 12 }    
         };
         const setting = frequencyMap[db.momentsSettings.frequency] || frequencyMap.medium;
 
         for (const character of db.characters) {
             const timeSinceLastPost = now - (character.lastMomentPostTime || 0);
-            // Dynamic interval calculation
             const randomInterval = (Math.random() * (setting.max - setting.min) + setting.min) * 3600000;
             
-            if (timeSinceLastPost > randomInterval && Math.random() < 0.5) { // Add another random check
+            if (timeSinceLastPost > randomInterval && Math.random() < 0.5) { 
                 await createAutomaticPost(character);
             }
         }
@@ -6518,7 +6648,6 @@ function setupGroupChatSettings() {
 
             const lastMessage = character.history.length > 0 ? character.history[character.history.length - 1] : null;
 
-            // Don't initiate if AI was the last one to speak
             if (lastMessage && lastMessage.role !== 'user') {
                 continue;
             }
@@ -6535,7 +6664,7 @@ function setupGroupChatSettings() {
             const setting = frequencyMap[character.proactiveChat.frequency] || frequencyMap.medium;
             const randomDelay = (Math.random() * (setting.max - setting.min) + setting.min) * 3600000;
 
-            if (timeSinceLastMessage > randomDelay && Math.random() < 0.6) { // Add randomness
+            if (timeSinceLastMessage > randomDelay && Math.random() < 0.6) { 
                 const prompt = generateProactiveChatPrompt(character);
                 const reply = await getAiReply(prompt);
                 
@@ -6571,7 +6700,7 @@ function setupGroupChatSettings() {
     function generateProactiveChatPrompt(character) {
         const assignedChar = db.characters.find(c => c.id === character.assignedCharId) || character;
         const assignedMe = db.meProfiles.find(p => p.id === character.assignedMeId) || db.meProfiles[0];
-        const lastMessage = character.history.length > 0 ? character.history[character.history.length - 1] : null;
+        const lastMessage = character.history.length > 0 ? character.history.filter(m => !m.isHidden)[character.history.filter(m => !m.isHidden).length - 1] : null;
         const currentTime = new Date();
         const hour = currentTime.getHours();
         
@@ -6592,7 +6721,7 @@ function setupGroupChatSettings() {
             else if (timeDiffHours < 24) timeDiffText = `${Math.round(timeDiffHours)}小时前`;
             else timeDiffText = `${Math.round(timeDiffHours / 24)}天前`;
 
-            const lastMessages = character.history.slice(-5).map(m => {
+            const lastMessages = character.history.filter(m => !m.isHidden).slice(-5).map(m => {
                 const sender = m.role === 'user' ? assignedMe.myName : assignedChar.realName;
                 const contentMatch = m.content.match(/\[.*?的消息：([\s\S]+?)\]/);
                 const text = contentMatch ? contentMatch[1] : m.content;
