@@ -19,7 +19,7 @@
             --text-color: #444;
             --text-secondary: #6D6D6D;
             --white-color: #fff;
-            --border-radius: 18px; 
+            --border-radius: 8px; /* MODIFIED: Reduced for WeChat-like style */
             --phone-corner-radius: 0px;
             --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --online-status-color: #4CAF50;
@@ -221,7 +221,7 @@
         #add-char-modal, #add-me-modal, #assign-char-modal, #assign-me-modal, 
         #persona-edit-modal, #edit-group-member-modal, #create-member-for-group-modal,
         #world-book-selection-modal, #invite-member-modal, #theme-selection-modal, 
-        #custom-theme-modal, #pat-pat-modal, #send-location-modal {
+        #custom-theme-modal, #pat-pat-modal, #send-location-modal, #monologue-modal {
             z-index: 102; 
         }
 
@@ -406,10 +406,6 @@
         .message-bubble:is(.sent, .user) {
             background-color: var(--sent-bg-color);
             color: var(--sent-text-color);
-            border-bottom-right-radius: 5px;
-        }
-        .message-bubble:is(.received, .ai) {
-            border-bottom-left-radius: 5px;
         }
         
         .message-bubble::before {
@@ -1331,12 +1327,19 @@
             white-space: pre-wrap;
             word-wrap: break-word;
         }
-        .moment-item-image {
+        .moment-item-image-container { /* NEW: For image cropping */
             width: 100%;
             max-width: 200px;
-            height: auto;
+            aspect-ratio: 1 / 1;
             border-radius: 10px;
+            overflow: hidden;
             margin-top: 5px;
+        }
+        .moment-item-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* MODIFIED: Cover to fill and crop */
+            object-position: center top; /* MODIFIED: Prioritize top part */
             cursor: pointer;
         }
         .moment-item-footer {
@@ -1839,6 +1842,12 @@
         <div id="pat-pat-modal" class="modal-overlay"></div>
         <div id="send-location-modal" class="modal-overlay"></div>
         <div id="incoming-call-modal" class="modal-overlay"></div>
+        <div id="monologue-modal" class="modal-overlay">
+            <div class="modal-window" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); color: white;">
+                <h3 style="color: #ff80ab;">TA的心声</h3>
+                <p id="monologue-content" style="line-height: 1.8; max-height: 60vh; overflow-y: auto;"></p>
+            </div>
+        </div>
 
         <div id="chat-settings-sidebar" class="settings-sidebar"></div>
         <div id="world-book-selection-modal" class="modal-overlay"></div>
@@ -1900,6 +1909,7 @@ function adjustColor(hex, percent, alpha = 1) {
 function injectHTML() {
     // Inject complex HTML structures once on load to keep the body clean.
     const settingsIconSVG = `<svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61-.25-1.17-.59-1.69-.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59-1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>`;
+    const monologueIconSVG = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z" /></svg>`;
 
     const htmlMap = {
         'chat-list-screen': `
@@ -1932,7 +1942,7 @@ function injectHTML() {
                 <button class="qq-nav-btn" data-tab="discover"><svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.6 20 4 16.4 4 12S7.6 4 12 4 20 7.6 20 12 16.4 20 12 20M12.5 15.6L9.4 12.5L12.5 9.4L11.4 8.3L8.3 11.4L11.4 14.5L12.5 15.6M15.7 11.4L14.6 12.5L11.5 9.4L12.6 8.3L15.7 11.4Z"></path></svg><span>发现</span></button>
                 <button class="qq-nav-btn" data-tab="me"><svg viewBox="0 0 24 24"><path d="M12 4C14.21 4 16 5.79 16 8S14.21 12 12 12 8 10.21 8 8 9.79 4 12 4M12 14C16.42 14 20 15.79 20 18V20H4V18C4 15.79 7.58 14 12 14Z"></path></svg><span>我</span></button>
             </footer>`,
-        'chat-room-screen': `<header class="app-header" id="chat-room-header-default"><button class="back-btn" data-target="chat-list-screen">‹</button><div class="title-container"><h1 class="title" id="chat-room-title">...</h1><div class="subtitle" id="chat-room-subtitle"><div class="online-indicator"></div><span id="chat-room-status-text">在线</span></div></div><button class="action-btn" id="chat-settings-btn">${settingsIconSVG}</button></header><header class="app-header" id="chat-room-header-select" style="display: none;"><button class="action-btn" id="cancel-multi-select-btn">取消</button><div class="title-container"><h1 class="title" id="multi-select-title">选择消息</h1></div><div class="placeholder"></div></header><main class="content"><div class="message-area" id="message-area"></div><div class="typing-indicator" id="typing-indicator"></div></main><div class="chat-input-wrapper"><div id="reply-preview-bar" class="reply-preview-bar"></div><div class="message-input-area" id="message-input-default"><button id="plus-menu-btn" class="icon-btn"><svg viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg></button><input type="text" id="message-input" placeholder="输入消息..."><button id="sticker-toggle-btn" class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button><button id="send-ai-btn" class="icon-btn"></button></div><div class="message-input-area" id="message-edit-bar" style="display: none;"><input type="text" id="message-edit-input"><button id="save-edit-btn" class="icon-btn send-btn">✓</button><button id="cancel-edit-btn" class="icon-btn" style="background-color: #aaa;">✗</button></div><div id="chat-plus-menu" class="chat-plus-menu"><div class="plus-menu-grid"></div></div></div><div id="multi-select-bar"><span id="select-count">已选择 0 项</span><button class="btn btn-danger" id="delete-selected-btn" style="width: auto; padding: 8px 16px;">删除</button></div><div id="sticker-modal"><div class="header"><span>我的表情</span><button class="btn btn-primary btn-small" id="add-new-sticker-btn">添加新表情</button></div><div class="sticker-grid" id="sticker-grid-container"></div></div>`,
+        'chat-room-screen': `<header class="app-header" id="chat-room-header-default"><button class="back-btn" data-target="chat-list-screen">‹</button><div class="title-container"><h1 class="title" id="chat-room-title">...</h1><div class="subtitle" id="chat-room-subtitle"><div class="online-indicator"></div><span id="chat-room-status-text">在线</span></div></div><div class="action-btn-group"><button class="action-btn" id="show-monologue-btn">${monologueIconSVG}</button><button class="action-btn" id="chat-settings-btn">${settingsIconSVG}</button></div></header><header class="app-header" id="chat-room-header-select" style="display: none;"><button class="action-btn" id="cancel-multi-select-btn">取消</button><div class="title-container"><h1 class="title" id="multi-select-title">选择消息</h1></div><div class="placeholder"></div></header><main class="content"><div class="message-area" id="message-area"></div><div class="typing-indicator" id="typing-indicator"></div></main><div class="chat-input-wrapper"><div id="reply-preview-bar" class="reply-preview-bar"></div><div class="message-input-area" id="message-input-default"><button id="plus-menu-btn" class="icon-btn"><svg viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg></button><input type="text" id="message-input" placeholder="输入消息..."><button id="sticker-toggle-btn" class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button><button id="send-ai-btn" class="icon-btn"></button></div><div class="message-input-area" id="message-edit-bar" style="display: none;"><input type="text" id="message-edit-input"><button id="save-edit-btn" class="icon-btn send-btn">✓</button><button id="cancel-edit-btn" class="icon-btn" style="background-color: #aaa;">✗</button></div><div id="chat-plus-menu" class="chat-plus-menu"><div class="plus-menu-grid"></div></div></div><div id="multi-select-bar"><span id="select-count">已选择 0 项</span><button class="btn btn-danger" id="delete-selected-btn" style="width: auto; padding: 8px 16px;">删除</button></div><div id="sticker-modal"><div class="header"><span>我的表情</span><button class="btn btn-primary btn-small" id="add-new-sticker-btn">添加新表情</button></div><div class="sticker-grid" id="sticker-grid-container"></div></div>`,
         'world-book-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">世界书</h1></div><button class="action-btn" id="add-world-book-btn">+</button></header><main class="content"><ul class="list-container" id="world-book-list-container"></ul><div class="placeholder-text" id="no-world-books-placeholder" style="display: none;"><p>你的世界一片混沌...</p><p>点击右上角的"+"创造第一个设定吧！</p></div></main>`,
         'edit-world-book-screen': `<header class="app-header"><button class="back-btn" data-target="world-book-screen">‹</button><div class="title-container"><h1 class="title" id="edit-world-book-title">创建/编辑条目</h1></div><div class="placeholder"></div></header><main class="content"><form id="edit-world-book-form"><input type="hidden" id="world-book-id"><div class="form-group"><label for="world-book-name">条目名称</label><input type="text" id="world-book-name" placeholder="例如：世界观背景、魔法体系" required></div><div class="form-group"><label for="world-book-content">条目内容</label><textarea id="world-book-content" rows="8" placeholder="详细描述此项设定..." required></textarea></div><div class="form-group"><label>注入位置</label><div class="form-group radio-group"><label><input type="radio" name="world-book-position" value="before" checked> 前</label><label><input type="radio" name="world-book-position" value="after"> 后</label></div></div><button type="submit" class="btn btn-primary">保存条目</button></form></main>`,
         'moments-screen': `<header class="app-header"><button class="back-btn" data-target="chat-list-screen" id="moments-back-btn">‹</button><div class="title-container"><h1 class="title">朋友圈</h1></div><div class="action-btn-group"><button class="action-btn" id="create-moment-btn"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--primary-color);"><path d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7Z" /></svg></button><button class="action-btn" id="moments-settings-btn">${settingsIconSVG}</button></div></header><main class="content"><div id="moments-list-wrapper"></div><div class="placeholder-text" id="no-moments-placeholder" style="display: none;"><p>朋友圈空空如也~</p><p>点击右上角相机发布第一条动态吧！</p></div></main>`,
@@ -2046,26 +2056,17 @@ function injectHTML() {
                 </button>
             </div>
             <div class="form-group"><label for="font-size-slider-private">聊天字体大小 <span id="font-size-value-private">15px</span></label><input type="range" id="font-size-slider-private" min="12" max="20" step="1" value="15" style="width: 100%; margin-top: 8px;"></div>
-            <div class="form-group"><label for="custom-css-input-private">自定义气泡样式 (CSS)<button id="reset-custom-css-btn-private" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button></label><textarea id="custom-css-input-private" rows="8" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="美化指南: 为气泡添加装饰，而非覆盖颜色。
-选择器规则:
-- 我方气泡: .message-bubble.user .content
-- 对方气泡: .message-bubble.ai .content
-- 通用气泡: .message-bubble .content
+            <div class="form-group"><label for="custom-css-input-private">自定义气泡样式 (CSS)<button id="reset-custom-css-btn-private" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button></label><textarea id="custom-css-input-private" rows="8" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="美化指南:
+- 气泡形状: .message-bubble { border-radius: 20px; }
+- 我方气泡: .message-bubble.user .content { ... }
+- 对方气泡: .message-bubble.ai .content { ... }
 
-/* 示例1: 细腻磨砂质感 */
+/* 示例: 细腻磨砂质感 */
 .message-bubble .content {
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.2);
   background: rgba(255,255,255,0.3);
   color: #333; /* 需自己适配颜色 */
-}
-/* 示例2: 我的气泡加高光 */
-.message-bubble.user .content::before {
-  content: ''; position: absolute;
-  width: 10px; height: 5px; top: 2px; left: 6px;
-  background: rgba(255,255,255,0.8);
-  border-radius: 50%; filter: blur(1.5px);
-  transform: rotate(-35deg);
 }"></textarea></div>
             <div class="form-group"><label>实时预览</label><div id="settings-preview-area-private"></div></div>
             <hr>
@@ -2097,20 +2098,14 @@ function injectHTML() {
             </button>
         </div>
         <div class="form-group"><label for="font-size-slider-group">聊天字体大小 <span id="font-size-value-group">15px</span></label><input type="range" id="font-size-slider-group" min="12" max="20" step="1" value="15" style="width: 100%; margin-top: 8px;"></div>
-        <div class="form-group"><label for="custom-css-input-group">自定义气泡样式 (CSS)<button id="reset-custom-css-btn-group" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button></label><textarea id="custom-css-input-group" rows="8" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="美化指南: 为气泡添加装饰，而非覆盖颜色。
-选择器规则:
-- 我方气泡: .message-bubble.user .content
-- 对方气泡: .message-bubble.ai .content 或 .message-bubble:not(.user) .content
-- 通用气泡: .message-bubble .content
+        <div class="form-group"><label for="custom-css-input-group">自定义气泡样式 (CSS)<button id="reset-custom-css-btn-group" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button></label><textarea id="custom-css-input-group" rows="8" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;" placeholder="美化指南:
+- 气泡形状: .message-bubble { border-radius: 0px; }
+- 我方气泡: .message-bubble.user .content { ... }
+- 对方气泡: .message-bubble.ai .content { ... }
 
-/* 示例1: 给所有收到的气泡加阴影 */
+/* 示例: 给所有收到的气泡加阴影 */
 .message-bubble.ai {
   box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-}
-/* 示例2: 让我的气泡字体变色(需适配主题) */
-.message-bubble.user .content {
-  color: white; 
-  text-shadow: 1px 1px 1px #000;
 }"></textarea></div>
         <div class="form-group"><label>实时预览</label><div id="settings-preview-area-group"></div></div>
         <div class="form-group"><label for="setting-group-chat-bg-upload" class="btn btn-primary">更换聊天背景</label><input type="file" id="setting-group-chat-bg-upload" accept="image/*" style="display:none;"></div><button type="submit" class="btn btn-primary">保存设置</button></form><hr style="border:none; border-top:1px solid #eee; margin: 20px 0;"><button type="button" class="btn btn-secondary" id="extract-group-memory-btn" style="margin-bottom: 15px;"><span class="btn-text">提取全体成员记忆</span><div class="spinner"></div></button><button type="button" class="btn btn-danger" id="clear-group-chat-history-btn">清空聊天记录</button></div>`,
@@ -2224,7 +2219,7 @@ function injectHTML() {
 
 // --- Global Variables and Constants ---
 const colorThemesV2 = {
-    'default': { name: '默认', sent: { bg: 'rgba(255,204,204,0.9)', text: '#A56767' }, received: { bg: 'rgba(255,255,255,0.9)', text: '#6D6D6D' } },
+    'default': { name: '默认(绿)', sent: { bg: '#98E165', text: '#000000' }, received: { bg: '#FFFFFF', text: '#000000' } },
     'pink_blue': { name: '粉蓝', sent: { bg: '#87CEFA', text: '#FFFFFF' }, received: { bg: '#FFC0CB', text: '#000000' } },
     'blue_white': { name: '蓝白', sent: { bg: '#ADD8E6', text: '#000000' }, received: { bg: '#FFFFFF', text: '#000000' } },
     'purple_yellow': { name: '紫黄', sent: { bg: '#DA70D6', text: '#FFFFFF' }, received: { bg: '#FFFFE0', text: '#000000' } },
@@ -2293,6 +2288,35 @@ const getEl = (id) => {
 };
 
 // --- Utility and Core Functions ---
+async function fetchWithRetry(url, options, retries = 2, timeout = 30000) {
+    for (let i = 0; i <= retries; i++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, timeout);
+
+        try {
+            const response = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (response.ok) {
+                return response;
+            }
+            // Don't retry on client-side errors (4xx), but do on rate limits
+            if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+                return response;
+            }
+            // Wait before retrying on server errors (5xx) or rate limits
+            if (i < retries) await new Promise(res => setTimeout(res, (i + 1) * 1500));
+            else return response; // Return the last failed response if all retries fail
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (i === retries) {
+                throw error; // Throw the final error if all retries fail
+            }
+             if (i < retries) await new Promise(res => setTimeout(res, (i + 1) * 1500)); // Wait before retrying
+        }
+    }
+}
 const saveData = () => localStorage.setItem('gemini-chat-app-db', JSON.stringify(db));
 const loadData = () => {
     const data = localStorage.getItem('gemini-chat-app-db');
@@ -2393,7 +2417,8 @@ const loadData = () => {
             customBubbleCss: c.customBubbleCss || '',
             chatBg: c.chatBg || 'https://i.postimg.cc/fTBXfFxV/IMG-20250804-223944.jpg',
             lastMomentPostTime: c.lastMomentPostTime || 0,
-            patPatResponse: c.patPatResponse || ''
+            patPatResponse: c.patPatResponse || '',
+            latestMonologue: c.latestMonologue || '...'
         });
     });
     db.groups.forEach(g => {
@@ -2587,6 +2612,7 @@ const init = () => {
     setupLocationFeature();
     renderPlusMenu();
     setupVideoCallSystem();
+    setupMonologue();
 };
 
 function updateClock() { 
@@ -3074,7 +3100,8 @@ function setupAddCharModal() {
                     assignedCharId: charId,
                     assignedMeId: 'me_default',
                     lastMomentPostTime: 0,
-                    unreadCount: 0 
+                    unreadCount: 0,
+                    latestMonologue: '...'
                 };
                 db.characters.push(newChar);
                 showToast(`角色"${newChar.remarkName}"创建成功！`);
@@ -3594,12 +3621,15 @@ function toggleStickerModal(forceState) {
         getEl('chat-room-title').textContent = (type === 'private') ? chat.remarkName : chat.name;
         
         const subtitle = getEl('chat-room-subtitle');
+        const monologueBtn = getEl('show-monologue-btn');
         if (type === 'private') {
             const assignedChar = db.characters.find(c => c.id === chat.assignedCharId) || {};
             subtitle.style.display = 'flex';
+            monologueBtn.style.display = 'flex';
             getEl('chat-room-status-text').textContent = assignedChar.status || '在线';
         } else {
-            subtitle.style.display = 'none'; 
+            subtitle.style.display = 'none';
+            monologueBtn.style.display = 'none';
         }
 
         chatRoomEl.style.backgroundImage = chat.chatBg ? `url(${chat.chatBg})` : 'none';
@@ -3907,10 +3937,10 @@ function toggleStickerModal(forceState) {
                 const isGroupRedPacket = currentChatType === 'group' && transferType === '红包';
                 transferMsg.transferStatus = isGroupRedPacket ? 'claimed' : action;
 
-                const cardOnScreen = getEl('message-area').querySelector(`.message-wrapper[data-id="${transferMsg.id}"] .transfer-card`);
+                        const cardOnScreen = getEl('message-area').querySelector(`.message-wrapper[data-id="${transferMsg.id}"] .transfer-card`);
                 if (cardOnScreen) { 
                     cardOnScreen.className = `transfer-card sent-transfer ${transferMsg.transferStatus}`; 
-                    cardOnScreen.querySelector('.transfer-status').textContent = (action === 'received' || action === 'claimed') ? '已被领取' : '已退回'; 
+                    cardOnScreen.querySelector('.transfer-status-footer').textContent = (action === 'received' || action === 'claimed') ? '已被领取' : '已退回'; 
                 }
                 saveData();
             }
@@ -4320,7 +4350,7 @@ function generatePrivateSystemPrompt(character) {
     prompt += `14. ✨重要✨ 你可以主动发送位置。格式为：[${assignedChar.realName}的位置：{"name":"位置名称", "address":"详细地址"}]。\n`;
     prompt += `15. ✨全新功能✨ 你可以发送HTML卡片来丰富对话。格式为: [html_card:<div>你的HTML代码</div>]。代码必须是单行，样式请使用内联style属性。这是一个高级功能，请在合适的情景下创造性地使用它来展示菜单、票据、UI界面等。\n`;
 
-    prompt += `16. 你的输出格式必须严格遵循以下几种之一，可以组合使用：
+    prompt += `16. 你的回复消息格式必须严格遵循以下几种之一，可以组合使用：
 a) 普通消息: [${assignedChar.realName}的消息：{消息内容}]
 b) 被拉黑后的消息(仅当你被拉黑时使用): [${assignedChar.realName}被拉黑后的消息：{消息内容}]
 c) 送我的礼物: [${assignedChar.realName}送来的礼物：{礼物描述}]
@@ -4332,11 +4362,23 @@ h) 位置: [${assignedChar.realName}的位置：{"name":"位置名称", "address
 i) HTML卡片: [html_card:{你的单行HTML代码}]
 j) 对我礼物的回应(此条不显示): [${assignedChar.realName}已接收礼物]
 k) 对我转账/红包的回应(此条不显示): [${assignedChar.realName}接收${assignedMe.myName}的转账/红包] 或 [${assignedChar.realName}退回${assignedMe.myName}的转账]
-l) 更新状态(此条不显示): [${assignedChar.realName}更新状态为：{新状态}]
-`;
-    prompt += `17. 你的每次回复可以生成1到5条消息。这些消息应以普通文本消息为主，可以偶尔、选择性地穿插一条特殊消息（如礼物、语音、图片、表情包、位置、HTML卡片等），特殊消息的位置应随机。大部分回复应该只包含文本消息。\n`;
-    prompt += `18. 不要主动结束对话，除非我明确提出。保持你的人设，自然地进行对话。`;
+l) 更新状态(此条不显示): [${assignedChar.realName}更新状态为：{新状态}]\n`;
     
+    prompt += `17. 不要主动结束对话，除非我明确提出。保持你的人设，自然地进行对话。\n`;
+    
+    prompt += `18. 【输出格式总规则】你的输出【必须】是【单个JSON对象】，该对象包含两个键：
+    a) "monologue": 字符串类型，代表你【当前】的内心独白（心声），必须严格遵守角色人设，内容简洁，不能超过250字。
+    b) "messages": 数组类型，包含1到5条你要发送的消息字符串（严格遵循规则16的格式）。
+    
+    【JSON输出示例】:
+    {
+      "monologue": "他好像很开心，这让我也不由自主地微笑起来。该怎么回应他呢...",
+      "messages": [
+        "[${assignedChar.realName}的消息：真的吗？那太好了！]",
+        "[${assignedChar.realName}发送的表情包：https://.../happy.png]"
+      ]
+    }`;
+
     return prompt;
 }
 
@@ -4426,11 +4468,16 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
        
         let payloadMessages = [{ role: 'system', content: systemPrompt }, ...messagesToSend];
         let response;
-        const stream = !isInternalCall && !imageBase64;
+        const stream = !isInternalCall && !imageBase64 && currentChatType !== 'private';
         
         if (isInternalCall && customPrompt.includes("视频通话请求")) {
             if (provider !== 'gemini') {
                  openaiPayload.response_format = { "type": "json_object" };
+            }
+        }
+        if(currentChatType === 'private' && !isInternalCall) {
+             if (provider !== 'gemini') {
+                openaiPayload.response_format = { "type": "json_object" };
             }
         }
         
@@ -4457,18 +4504,18 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
                 };
                  
                 const fetchUrl = `${url}/v1beta/models/${model}:generateContent?key=${key}`;
-                response = await fetch(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload) });
-
+                response = await fetchWithRetry(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload) });
             }
         } else { // Standard text chat
             if (provider === 'gemini') {
                  const geminiPayload = { contents: payloadMessages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })), system_instruction: { parts: [{ text: systemPrompt }] }, generationConfig: {} };
+                 if (currentChatType === 'private' && !isInternalCall) geminiPayload.generationConfig.responseMimeType = "application/json";
                  if(geminiPayload.contents[0]?.role === 'user' && geminiPayload.contents[0]?.parts[0].text.includes(systemPrompt)) geminiPayload.contents.shift(); 
                  const fetchUrl = stream ? `${url}/v1beta/models/${model}:streamGenerateContent?key=${key}` : `${url}/v1beta/models/${model}:generateContent?key=${key}`;
-                 response = await fetch(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload) });
+                 response = await fetchWithRetry(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload) });
             } else {
                 openaiPayload = { ...openaiPayload, model, messages: payloadMessages, stream };
-                response = await fetch(`${url}/v1/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: JSON.stringify(openaiPayload) });
+                response = await fetchWithRetry(`${url}/v1/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: JSON.stringify(openaiPayload) });
             }
         }
 
@@ -4480,8 +4527,27 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
         } else {
             const data = await response.json();
             const replyText = (provider === 'gemini') ? data.candidates[0].content.parts[0].text : data.choices[0].message.content;
+            if(!replyText || replyText.trim() === '') {
+                showToast('AI 返回了空内容，请重试');
+                return null;
+            }
             if(isInternalCall) {
                 return replyText;
+            } else if (currentChatType === 'private') {
+                try {
+                    const replyJson = JSON.parse(replyText);
+                    chat.latestMonologue = replyJson.monologue || '...';
+                    const messages = replyJson.messages || [];
+                     messages.forEach(msgContent => {
+                        const message = { id: `msg_${Date.now()}_${Math.random()}`, role: 'assistant', content: msgContent.trim(), timestamp: Date.now() };
+                        chat.history.push(message);
+                        addMessageBubble(message);
+                     });
+                     saveData();
+                     renderChatList();
+                } catch(e) {
+                    showToast('AI返回了无效的格式，请检查Prompt');
+                }
             } else {
                  const messages = replyText.match(/\[.*?\]/g) || [];
                  messages.forEach(msgContent => {
@@ -4544,6 +4610,11 @@ async function processStream(response, chat, apiType) {
             }).join('');
             accumulatedChunk = "";
         }
+    }
+
+    if (fullResponse.trim() === '') {
+        showToast('AI 返回了空内容，请重试');
+        return;
     }
 
     if (fullResponse) {
@@ -5485,6 +5556,25 @@ function setupLocationFeature() {
     });
 }
 
+function setupMonologue() {
+    const monologueBtn = getEl('show-monologue-btn');
+    const monologueModal = getEl('monologue-modal');
+    
+    monologueBtn.addEventListener('click', () => {
+        const chat = db.characters.find(c => c.id === currentChatId);
+        if (chat) {
+            getEl('monologue-content').textContent = chat.latestMonologue || '...';
+            monologueModal.classList.add('visible');
+        }
+    });
+
+    monologueModal.addEventListener('click', (e) => {
+        if (e.target === monologueModal) {
+            monologueModal.classList.remove('visible');
+        }
+    });
+}
+
 function showAssignModal(type, forGroup = false) {
     const modalId = forGroup ? 'assign-me-modal' : (type === 'char' ? 'assign-char-modal' : 'assign-me-modal');
     const listId = forGroup ? 'assign-me-list' : (type === 'char' ? 'assign-char-list' : 'assign-me-list');
@@ -5554,6 +5644,7 @@ function openThemeSelectionModal(type) {
                 } else {
                     chat.theme = key;
                     chat.customTheme = null;
+                    saveData(); // Save theme selection
                     updateSettingsPreview(type);
                     getEl(`current-theme-name-${type}`).textContent = theme.name;
                 }
@@ -5591,6 +5682,7 @@ function openCustomThemeModal(type) {
                 text: getEl('custom-received-text').value
             }
         };
+        saveData(); // Save custom theme
         updateSettingsPreview(type);
         getEl(`current-theme-name-${type}`).textContent = '自定义';
         modal.classList.remove('visible');
@@ -5614,8 +5706,8 @@ function loadSettingsToSidebar(){
     getEl('setting-max-memory-private').value = char.maxMemory || 10;
     
     const themeKey = char.theme || 'default';
-    const theme = colorThemesV2[themeKey] || colorThemesV2['default'];
-    getEl('current-theme-name-private').textContent = theme.name;
+    const themeName = themeKey === 'custom' ? '自定义' : (colorThemesV2[themeKey]?.name || '默认(绿)');
+    getEl('current-theme-name-private').textContent = themeName;
 
     const fontSizeSlider = getEl('font-size-slider-private');
     fontSizeSlider.value = char.fontSize || 15;
@@ -5753,7 +5845,7 @@ function updateSettingsPreview(type) {
             
             try {
                 const headers = provider === 'gemini' ? {} : { 'Authorization': `Bearer ${key}` };
-                const response = await fetch(modelsUrl, { method: 'GET', headers });
+                const response = await fetchWithRetry(modelsUrl, { method: 'GET', headers });
                 
                 if (!response.ok) throw new Error(`网络响应错误: ${response.status}`);
                 
@@ -5916,8 +6008,8 @@ function setupGroupChatSettings() {
         renderGroupMembersInSettings(group); 
         
         const themeKey = group.theme || 'default';
-        const theme = colorThemesV2[themeKey] || colorThemesV2['default'];
-        getEl('current-theme-name-group').textContent = theme.name;
+        const themeName = themeKey === 'custom' ? '自定义' : (colorThemesV2[themeKey]?.name || '默认(绿)');
+        getEl('current-theme-name-group').textContent = themeName;
         
         const fontSizeSlider = getEl('font-size-slider-group');
         fontSizeSlider.value = group.fontSize || 15;
@@ -6258,7 +6350,8 @@ function setupGroupChatSettings() {
         const li = document.createElement('li');
         li.className = 'moment-item';
         li.dataset.momentId = moment.id;
-        li.innerHTML = `<img src="${author.avatar}" alt="${author.remarkName}" class="moment-item-avatar"><div class="moment-item-main"><p class="moment-item-name">${author.remarkName}</p><p class="moment-item-content">${moment.content}</p>${moment.imageUrl ? `<img src="${moment.imageUrl}" class="moment-item-image">` : ''}<div class="moment-item-footer"><span class="moment-item-time">${formatTimeAgo(moment.timestamp)}</span><div class="moment-item-actions"><button class="action-toggle-btn" data-action="toggle-popup">...</button><div class="moment-action-popup"><button class="action-popup-btn like-btn" data-action="like">${ICONS.LIKE} <span>赞</span></button><button class="action-popup-btn comment-btn" data-action="comment">${ICONS.COMMENT} <span>评论</span></button></div></div></div><div class="moment-interactions"><div class="moment-likes"></div><ul class="moment-comments-list"></ul></div></div>`;
+        const imageHTML = moment.imageUrl ? `<div class="moment-item-image-container"><img src="${moment.imageUrl}" class="moment-item-image"></div>` : '';
+        li.innerHTML = `<img src="${author.avatar}" alt="${author.remarkName}" class="moment-item-avatar"><div class="moment-item-main"><p class="moment-item-name">${author.remarkName}</p><p class="moment-item-content">${moment.content}</p>${imageHTML}<div class="moment-item-footer"><span class="moment-item-time">${formatTimeAgo(moment.timestamp)}</span><div class="moment-item-actions"><button class="action-toggle-btn" data-action="toggle-popup">...</button><div class="moment-action-popup"><button class="action-popup-btn like-btn" data-action="like">${ICONS.LIKE} <span>赞</span></button><button class="action-popup-btn comment-btn" data-action="comment">${ICONS.COMMENT} <span>评论</span></button></div></div></div><div class="moment-interactions"><div class="moment-likes"></div><ul class="moment-comments-list"></ul></div></div>`;
         updateMomentInteractions(li, moment);
         return li;
     }
@@ -6669,29 +6762,34 @@ function setupGroupChatSettings() {
                 const reply = await getAiReply(prompt);
                 
                 if (reply) {
-                    const messages = reply.match(/\[.*?\]/g) || [];
-                    if (messages.length === 0) continue;
+                    try {
+                        const replyJson = JSON.parse(reply);
+                        character.latestMonologue = replyJson.monologue || '...';
+                        const messages = replyJson.messages || [];
 
-                    let firstMessageContent = messages[0];
-                    messages.forEach(msgContent => {
-                        const message = {
-                            id: `msg_${Date.now()}_${Math.random()}`,
-                            role: 'assistant',
-                            content: msgContent.trim(),
-                            timestamp: Date.now()
-                        };
-                        character.history.push(message);
-                    });
-                    character.unreadCount = (character.unreadCount || 0) + 1;
-                    saveData();
+                        if (messages.length === 0) continue;
 
-                    if (character.id === currentChatId && getEl('chat-room-screen').classList.contains('active')) {
-                       renderMessages(false, true);
-                    }
-                    renderChatList();
-                    if (!getEl('chat-room-screen').classList.contains('active') || character.id !== currentChatId) {
-                         showTopNotification(character, firstMessageContent);
-                    }
+                        let firstMessageContent = messages[0];
+                        messages.forEach(msgContent => {
+                            const message = {
+                                id: `msg_${Date.now()}_${Math.random()}`,
+                                role: 'assistant',
+                                content: msgContent.trim(),
+                                timestamp: Date.now()
+                            };
+                            character.history.push(message);
+                        });
+                        character.unreadCount = (character.unreadCount || 0) + 1;
+                        saveData();
+
+                        if (character.id === currentChatId && getEl('chat-room-screen').classList.contains('active')) {
+                           renderMessages(false, true);
+                        }
+                        renderChatList();
+                        if (!getEl('chat-room-screen').classList.contains('active') || character.id !== currentChatId) {
+                             showTopNotification(character, firstMessageContent);
+                        }
+                    } catch(e) { console.error("Proactive chat parse error:", e); }
                 }
             }
         }
@@ -6738,7 +6836,9 @@ ${historyContext}
 【重要】请参考当前时间和上次对话的时间差来决定你的开场白。例如，如果是第二天早上，可以说“早上好”；如果只是过了几个小时，可以接着之前的话题说。
 【禁止】绝对不许使用“在吗？”、“你好”这类干巴巴的开场白。你的开场白必须有内容，有意义。
 【输出限制】你的回复必须且只能包含一条简短的消息。模仿真实的人类聊天习惯，不要长篇大论。
-【要求】你的回复必须严格遵循格式：[${assignedChar.realName}的消息：{你的聊天内容}]`;
+【要求】你的输出【必须】是【单个JSON对象】，该对象包含两个键：
+    a) "monologue": 字符串类型，代表你【当前】的内心独白（心声）。
+    b) "messages": 数组类型，【必须包含且只包含一条】你要发送的消息字符串（格式：[${assignedChar.realName}的消息：{你的聊天内容}]）。`;
     }
     
     async function interAiReactionScheduler() {
