@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>简约机</title>
+    <title>喷墨机</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/kGYP6CQw/6.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,7 +20,7 @@
             --text-secondary: #6D6D6D;
             --white-color: #fff;
             --border-radius: 8px; /* MODIFIED: Reduced for WeChat-like style */
-            --phone-corner-radius: 0px;
+            --phone-corner-radius: 40px; /* MODIFIED: More rounded corners for the phone body */
             --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --online-status-color: #4CAF50;
             --nav-footer-bg: #f7f7f7;
@@ -35,19 +35,44 @@
         }
         
         *, *::before, *::after { box-sizing: border-box; }
+        
+        /* --- NEW: 自适应布局 --- */
         body {
-            font-family: var(--font-family); margin: 0; padding: 0;
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 1rem; /* 为小屏幕边缘留出空间 */
             background: linear-gradient(135deg, var(--bg-color), var(--secondary-color));
-            display: flex; align-items: center; justify-content: center; min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box; /* 确保padding不会导致溢出 */
         }
 
         .phone-screen {
-            width: 100%; max-width: 420px; height: 100vh; max-height: 850px;
+            width: 100%;
+            height: 100%;
+            /* 在大屏幕上强制维持手机比例 */
+            max-width: 450px;
+            max-height: calc(100vh - 2rem); /* 留出上下边距 */
+            aspect-ratio: 9 / 19.5; /* 关键：强制维持一个接近iPhone的屏幕比例 */
             background-color: var(--white-color);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2), 
+                        inset 0 0 0 8px #111; /* 增加模拟边框和更柔和的阴影 */
             border-radius: var(--phone-corner-radius);
-            overflow: hidden; position: relative;
-            display: flex; flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 当屏幕足够宽时，让手机模拟器的高度成为主要约束 */
+        @media (min-width: 480px) {
+            .phone-screen {
+                width: auto; /* 宽度由高度和比例决定 */
+                height: 88vh; /* 使用视窗高度的一个比例 */
+                max-height: 850px; /* 限制最大高度 */
+            }
         }
         
         .screen {
@@ -222,7 +247,7 @@
         #persona-edit-modal, #edit-group-member-modal, #create-member-for-group-modal,
         #world-book-selection-modal, #invite-member-modal, #theme-selection-modal, 
         #custom-theme-modal, #pat-pat-modal, #send-location-modal, #monologue-modal,
-        #add-music-modal {
+        #add-music-modal, #playback-customize-modal {
             z-index: 102; 
         }
 
@@ -817,7 +842,6 @@
             opacity: 1;
         }
         
-        /* NEW: Music Card Style */
         .music-card {
             width: 230px;
             background: white;
@@ -1861,7 +1885,7 @@
         .video-call-control-btn.hangup { background-color: #ff3b30; }
         .video-call-control-btn svg { width: 24px; height: 24px; fill: white; }
         
-        /* --- NEW: Music App Styles --- */
+        /* --- Music App Styles --- */
         #music-player-screen .content {
             padding: 0;
             display: flex;
@@ -1880,6 +1904,7 @@
             margin-bottom: 8px;
             cursor: pointer;
             transition: background-color 0.2s;
+            position: relative;
         }
         .music-playlist-item.playing {
             background-color: var(--bg-color);
@@ -1916,6 +1941,7 @@
             background-color: #f7f7f7;
             border-top: 1px solid #eee;
             text-align: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         }
         .music-player-track-display {
             display: flex;
@@ -1945,7 +1971,7 @@
             gap: 10px;
             margin-bottom: 10px;
         }
-        #progress-bar {
+        #progress-bar, #playback-progress-bar {
             width: 100%;
             -webkit-appearance: none;
             appearance: none;
@@ -1955,7 +1981,7 @@
             outline: none;
             cursor: pointer;
         }
-        #progress-bar::-webkit-slider-thumb {
+        #progress-bar::-webkit-slider-thumb, #playback-progress-bar::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 14px;
@@ -1984,6 +2010,140 @@
             width: 48px;
             height: 48px;
         }
+        
+        /* --- NEW: 灵动岛增强样式 --- */
+        #music-dynamic-island {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translate(-50%, -150%);
+            z-index: 1002;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            cursor: pointer;
+            min-width: 120px;
+            height: 40px;
+            padding: 5px 10px;
+            gap: 8px;
+            border-radius: 20px;
+            align-items: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #music-dynamic-island.visible {
+            transform: translate(-50%, 0);
+        }
+        #music-dynamic-island.expanded {
+            width: 90%;
+            max-width: 380px;
+            height: 70px;
+            padding: 10px 15px;
+        }
+        #island-cover-art {
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            object-fit: cover;
+            transition: all 0.4s ease;
+        }
+        #music-dynamic-island.expanded #island-cover-art {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+        }
+        #island-info {
+            flex-grow: 1;
+            overflow: hidden;
+            text-align: left;
+        }
+        #island-track-title {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #island-track-artist {
+            font-size: 11px;
+            color: #ccc;
+            display: none; /* 默认隐藏 */
+        }
+        #music-dynamic-island.expanded #island-track-artist {
+            display: block; /* 展开时显示 */
+        }
+        #island-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        #island-play-pause-btn, #island-prev-btn, #island-next-btn {
+            background: none;
+            border: none;
+            padding: 5px;
+        }
+        #island-play-pause-btn svg, #island-prev-btn svg, #island-next-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+        #music-dynamic-island:not(.expanded) #island-prev-btn,
+        #music-dynamic-island:not(.expanded) #island-next-btn {
+            display: none;
+        }
+
+        /* --- NEW: 音乐播放界面样式 --- */
+        #music-playback-screen {
+            background-color: #333;
+            color: white;
+        }
+        .playback-background {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) brightness(0.6);
+            transform: scale(1.1);
+            transition: background-image 0.5s ease-in-out;
+        }
+        .record-player {
+            width: 280px;
+            height: 280px;
+            margin: 40px auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .record-cover {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover; /* 核心：裁剪图片以适应圆形 */
+            border: 10px solid #111;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            animation: rotateRecord 20s linear infinite;
+            animation-play-state: paused; /* 默认暂停 */
+        }
+        .record-cover.playing {
+            animation-play-state: running; /* 播放时旋转 */
+        }
+        @keyframes rotateRecord {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        #playback-controls svg {
+            width: 32px; height: 32px;
+        }
+        #playback-play-pause-btn svg {
+            width: 52px; height: 52px;
+        }
+        #playback-progress-bar::-webkit-slider-thumb {
+            background: var(--white-color);
+        }
+
     </style>
 </head>
 <body>
@@ -1995,6 +2155,7 @@
                 <div class="message"></div>
             </div>
         </div>
+        <div id="music-dynamic-island"></div>
         <div id="home-screen" class="screen active"></div>
         <div id="chat-list-screen" class="screen"></div>
         <div id="chat-room-screen" class="screen"></div>
@@ -2009,6 +2170,7 @@
         <div id="video-call-screen" class="screen"></div>
         <div id="outgoing-call-screen" class="screen"></div>
         <div id="music-player-screen" class="screen"></div>
+        <div id="music-playback-screen" class="screen"></div>
         
         <!-- Memory Core Screens -->
         <div id="memory-core-screen" class="screen"></div>
@@ -2151,9 +2313,9 @@ function injectHTML() {
             <select id="api-profile-select"></select>
         </div>
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button type="button" class="btn api-manager-btn" id="new-api-profile-btn" style="flex:1;">新建</button>
-            <button type="button" class="btn api-manager-btn" id="save-api-profile-btn" style="flex:1;">保存</button>
-            <button type="button" class="btn api-manager-btn btn-danger" id="delete-api-profile-btn" style="flex:1;">删除</button>
+            <button type="button" class="btn api-manager-btn" id="new-api-profile-btn">新建</button>
+            <button type="button" class="btn api-manager-btn" id="save-api-profile-btn">保存</button>
+            <button type="button" class="btn api-manager-btn btn-danger" id="delete-api-profile-btn">删除</button>
         </div>
         <hr>
 
@@ -2245,6 +2407,54 @@ function injectHTML() {
         </div>
     </div>
 </main>`,
+        'music-playback-screen': `
+            <div class="playback-background"></div>
+            <header class="app-header" style="background: transparent; border: none;">
+                <button class="back-btn" data-target="music-player-screen" style="color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">‹</button>
+                <div class="title-container" style="color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                    <h1 class="title" id="playback-title">歌曲名</h1>
+                    <h2 class="subtitle" id="playback-artist" style="color: #eee;">歌手</h2>
+                </div>
+                <div class="action-btn-group">
+                    <button class="action-btn" id="customize-playback-btn" style="color: white; font-size: 24px;">🎨</button>
+                </div>
+            </header>
+            <main class="content" style="text-align: center; padding-top: 20px; color: white; display:flex; align-items:center; justify-content:center;">
+                <div class="record-player">
+                    <img src="https://i.postimg.cc/KYzxf41g/IMG-20250828-151355.jpg" alt="唱片封面" id="record-cover" class="record-cover">
+                </div>
+            </main>
+            <div class="music-player-controls" id="playback-controls" style="background: transparent; position: absolute; bottom: 0; width: 100%;">
+                <div class="progress-container" style="padding: 0 20px;">
+                    <span id="playback-current-time" style="color:white;">0:00</span>
+                    <input type="range" id="playback-progress-bar" value="0" min="0" max="100" step="0.1">
+                    <span id="playback-total-duration" style="color:white;">0:00</span>
+                </div>
+                <div class="player-buttons">
+                    <button class="player-btn" id="playback-prev-btn"><svg viewBox="0 0 24 24"><path fill="white" d="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" /></svg></button>
+                    <button class="player-btn" id="playback-play-pause-btn">
+                        <svg viewBox="0 0 24 24" id="playback-play-icon"><path fill="white" d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
+                        <svg viewBox="0 0 24 24" id="playback-pause-icon" style="display:none;"><path fill="white" d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>
+                    </button>
+                    <button class="player-btn" id="playback-next-btn"><svg viewBox="0 0 24 24"><path fill="white" d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" /></svg></button>
+                </div>
+            </div>
+            <div id="playback-customize-modal" class="modal-overlay">
+                <div class="modal-window">
+                    <h3>播放器美化</h3>
+                    <div class="form-group">
+                        <label>更换唱片封面 (仅当前歌曲)</label>
+                        <input type="file" id="cover-upload-input" accept="image/*" style="display: none;">
+                        <label for="cover-upload-input" class="btn btn-secondary">选择图片</label>
+                    </div>
+                    <div class="form-group">
+                        <label>更换播放器背景 (全局)</label>
+                        <input type="file" id="playback-bg-upload-input" accept="image/*" style="display: none;">
+                        <label for="playback-bg-upload-input" class="btn btn-primary">选择图片</label>
+                    </div>
+                </div>
+            </div>
+        `,
         'memory-core-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">记忆核心</h1></div><div class="action-btn-group"><button class="action-btn" id="add-memory-btn">+</button><button class="action-btn" id="memory-settings-btn">${settingsIconSVG}</button></div></header><main class="content"><ul class="list-container" id="memory-core-list-container"></ul><div class="placeholder-text" id="no-memories-placeholder" style="display: none;"><p>AI还没有任何记忆...</p><p>在聊天设置中为角色提取记忆，或点击"+"添加全局记忆吧！</p></div></main>`,
         'edit-memory-screen': `<header class="app-header"><button class="back-btn" data-target="memory-core-screen">‹</button><div class="title-container"><h1 class="title" id="edit-memory-screen-title">创建/编辑记忆</h1></div><div class="placeholder"></div></header><main class="content"><form id="edit-memory-form"><input type="hidden" id="memory-id"><div class="form-group" id="memory-topic-group"><label for="memory-topic">记忆主题 (简短概括)</label><input type="text" id="memory-topic" placeholder="例如：用户生日、宠物名字" required></div><div class="form-group"><label for="memory-content">记忆内容 (详细信息)</label><textarea id="memory-content" rows="12" placeholder="详细描述这条记忆..." required></textarea></div><button type="submit" class="btn btn-primary">保存记忆</button></form></main>`,
         'memory-core-settings-screen': `<header class="app-header"><button class="back-btn" data-target="memory-core-screen">‹</button><div class="title-container"><h1 class="title">记忆核心设置</h1></div><div class="placeholder"></div></header><main class="content"><form id="memory-settings-form"><div class="form-group"><label for="memory-injection-prompt">记忆注入提示词</label><textarea id="memory-injection-prompt" rows="8" placeholder="描述如何将角色的个人记忆注入到主提示词中。使用 {{memories}} 作为记忆内容的占位符。"></textarea></div><div class="form-group"><label for="memory-extraction-prompt">记忆提取提示词</label><textarea id="memory-extraction-prompt" rows="8" placeholder="描述如何从对话历史中提取和总结新的记忆点。使用 {{history}} 作为对话历史占位符，{{memories}} 作为已有记忆占位符。"></textarea></div><button type="submit" class="btn btn-primary">保存设置</button></form></main>`,
@@ -2294,8 +2504,11 @@ function injectHTML() {
                 </div>
                 <div class="form-group">
                     <label for="add-music-url">歌曲文件URL</label>
-                    <input type="url" id="add-music-url" placeholder="https://.../song.mp3" required>
+                    <input type="url" id="add-music-url" placeholder="https://.../song.mp3">
                 </div>
+                <p style="text-align:center; color:#888; margin: -5px 0 10px;">或</p>
+                <input type="file" id="add-music-file" accept=".mp3, audio/*" style="display:none;">
+                <label for="add-music-file" class="btn btn-secondary" style="margin-bottom: 15px;">从本地上传歌曲</label>
                 <div class="form-group">
                     <label for="add-music-cover">封面图片URL (可选)</label>
                     <input type="url" id="add-music-cover" placeholder="https://.../cover.jpg">
@@ -2673,7 +2886,8 @@ const loadData = () => {
             isPlaying: false,
             currentTime: 0,
             isShuffled: false,
-            repeatMode: 'none' // 'none', 'one', 'all'
+            repeatMode: 'none', // 'none', 'one', 'all'
+            playbackBg: '' // NEW: for custom background
         }
     };
     db = data ? { ...defaultDb, ...JSON.parse(data) } : defaultDb;
@@ -2749,6 +2963,19 @@ const loadData = () => {
 const showToast = (message) => { const el = getEl('toast-notification'); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 3000); };
 const switchScreen = (targetId) => {
     removeContextMenu();
+    
+    // Dynamic Island Logic
+    const isMusicPlaying = !musicPlayer.paused;
+    if (isMusicPlaying) {
+        if (targetId !== 'music-player-screen' && targetId !== 'music-playback-screen') {
+            showDynamicIsland();
+        } else {
+            hideDynamicIsland();
+        }
+    } else {
+        hideDynamicIsland();
+    }
+
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     getEl(targetId)?.classList.add('active');
     document.querySelectorAll('.settings-sidebar.open, .modal-overlay.visible, .action-sheet-overlay.visible').forEach(el => el.classList.remove('open', 'visible'));
@@ -3534,8 +3761,8 @@ function setupChatRoom() {
         }
         const musicCard = e.target.closest('.music-card');
         if (musicCard && musicCard.dataset.musicId) {
-            playMusic(musicCard.dataset.musicId);
-            switchScreen('music-player-screen');
+            switchScreen('music-playback-screen');
+            loadAndPlayTrack(musicCard.dataset.musicId);
         }
     });
     
@@ -3631,12 +3858,11 @@ function setupChatRoom() {
     
     messageArea.addEventListener('contextmenu', (e) => { 
         e.preventDefault(); 
-        if (isInMultiSelectMode) return; 
         const bubbleRow = e.target.closest('.message-bubble-row'); 
-        if (bubbleRow) {
-            const wrapper = bubbleRow.closest('.message-wrapper');
-            handleMessageLongPress(wrapper, e.clientX, e.clientY); 
-        }
+        if (!bubbleRow || isInMultiSelectMode) return; 
+        
+        const wrapper = bubbleRow.closest('.message-wrapper');
+        handleMessageLongPress(wrapper, e.clientX, e.clientY); 
     });
     messageArea.addEventListener('touchstart', (e) => { 
         const bubbleRow = e.target.closest('.message-bubble-row'); 
@@ -3757,7 +3983,7 @@ function toggleStickerModal(forceState) {
                     getEl('send-camera-form').reset();
                     getEl('send-camera-modal').classList.add('visible');
                     break;
-                case 'voice-message-btn': // This was missing from your original plus menu, I'm assuming it's a bug and re-adding it.
+                case 'voice-message-btn': 
                     getEl('send-voice-form').reset();
                     getEl('voice-duration-preview').textContent = '0"';
                     getEl('send-voice-modal').classList.add('visible');
@@ -3887,17 +4113,33 @@ function toggleStickerModal(forceState) {
             renderChatList();
         }
     }
-    function startMessageEdit(messageId) { exitMultiSelectMode(); editingMessageId = messageId; const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId); const message = chat.history.find(m => m.id === messageId); if (!message) return; const match = message.content.match(/\[.*?的消息：([\s\S]+)\]/); const contentToEdit = match ? match[1].trim() : message.content; getEl('message-edit-input').value = contentToEdit; getEl('message-input-default').style.display = 'none'; getEl('message-edit-bar').style.display = 'flex'; getEl('message-edit-input').focus(); }
+        function startMessageEdit(messageId) {
+        exitMultiSelectMode();
+        editingMessageId = messageId;
+        const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
+        const message = chat.history.find(m => m.id === messageId);
+        if (!message) return;
+
+        const match = message.content.match(/\[.*?的消息：([\s\S]+)\]/);
+        const contentToEdit = match ? match[1].trim() : message.content;
+
+        getEl('message-edit-input').value = contentToEdit;
+        getEl('message-input-default').style.display = 'none';
+        getEl('message-edit-bar').style.display = 'flex';
+        getEl('message-edit-input').focus();
+    }
+
     function saveMessageEdit() {
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const messageIndex = chat.history.findIndex(m => m.id === editingMessageId);
         if (messageIndex === -1) return;
+        
         const newText = getEl('message-edit-input').value.trim();
         if (newText) {
             const oldContent = chat.history[messageIndex].content;
             const prefixMatch = oldContent.match(/(\[.*?的消息：)[\s\S]+\]/);
-            const prefix = prefixMatch ? prefixMatch[1] : '';
-            chat.history[messageIndex].content = `${prefix}${newText}]`;
+            const prefix = prefixMatch ? prefixMatch[1] : `[${(chat.me?.nickname || '我')}的消息：`;
+            chat.history[messageIndex].content = `${prefix}${newText}]`; // Re-wrap the content
             saveData();
             currentPage = 1;
             renderMessages(false, true);
@@ -3905,9 +4147,40 @@ function toggleStickerModal(forceState) {
         }
         cancelMessageEdit();
     }
-    function cancelMessageEdit() { editingMessageId = null; getEl('message-input-default').style.display = 'flex'; getEl('message-edit-bar').style.display = 'none'; }
-    function enterMultiSelectMode(initialMessageId) { isInMultiSelectMode = true; getEl('chat-room-header-default').style.display = 'none'; getEl('chat-room-header-select').style.display = 'flex'; document.querySelector('.chat-input-wrapper').style.display='none'; getEl('multi-select-bar').classList.add('visible'); getEl('chat-room-screen').classList.add('multi-select-active'); selectedMessageIds.clear(); if (initialMessageId) { toggleMessageSelection(initialMessageId); } }
-    function exitMultiSelectMode() { isInMultiSelectMode = false; getEl('chat-room-header-default').style.display = 'flex'; getEl('chat-room-header-select').style.display = 'none'; document.querySelector('.chat-input-wrapper').style.display='block'; getEl('multi-select-bar').classList.remove('visible'); getEl('chat-room-screen').classList.remove('multi-select-active'); selectedMessageIds.forEach(id => { const el = getEl('message-area').querySelector(`.message-wrapper[data-id="${id}"]`); if (el) el.classList.remove('multi-select-selected'); }); selectedMessageIds.clear(); }
+
+    function cancelMessageEdit() {
+        editingMessageId = null;
+        getEl('message-input-default').style.display = 'flex';
+        getEl('message-edit-bar').style.display = 'none';
+    }
+
+    function enterMultiSelectMode(initialMessageId) {
+        isInMultiSelectMode = true;
+        getEl('chat-room-header-default').style.display = 'none';
+        getEl('chat-room-header-select').style.display = 'flex';
+        document.querySelector('.chat-input-wrapper').style.display='none';
+        getEl('multi-select-bar').classList.add('visible');
+        getEl('chat-room-screen').classList.add('multi-select-active');
+        selectedMessageIds.clear();
+        if (initialMessageId) {
+            toggleMessageSelection(initialMessageId);
+        }
+    }
+
+    function exitMultiSelectMode() {
+        isInMultiSelectMode = false;
+        getEl('chat-room-header-default').style.display = 'flex';
+        getEl('chat-room-header-select').style.display = 'none';
+        document.querySelector('.chat-input-wrapper').style.display='block';
+        getEl('multi-select-bar').classList.remove('visible');
+        getEl('chat-room-screen').classList.remove('multi-select-active');
+        selectedMessageIds.forEach(id => {
+            const el = getEl('message-area').querySelector(`.message-wrapper[data-id="${id}"]`);
+            if (el) el.classList.remove('multi-select-selected');
+        });
+        selectedMessageIds.clear();
+    }
+
     function toggleMessageSelection(messageId) {
         const el = getEl('message-area').querySelector(`.message-wrapper[data-id="${messageId}"]`);
         if (!el) return;
@@ -3921,6 +4194,7 @@ function toggleStickerModal(forceState) {
         getEl('select-count').textContent = `已选择 ${selectedMessageIds.size} 项`;
         getEl('delete-selected-btn').disabled = selectedMessageIds.size === 0;
     }
+
     function deleteSelectedMessages() {
         if (selectedMessageIds.size === 0) return;
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
@@ -4109,7 +4383,7 @@ function toggleStickerModal(forceState) {
         let bubbleWrapperClass = `message-bubble ${isSent ? 'sent user' : 'received ai'}`;
 
         const assignedChar = (currentChatType === 'private') ? (db.characters.find(c => c.id === chat.assignedCharId) || {}) : {};
-        const blockedMatch = content.match(new RegExp(`\\[${(assignedChar.realName || '')}被拉黑后的消息：([\\s\S]+?)\\]`));
+        const blockedMatch = content.match(new RegExp(`\\[${(assignedChar.realName || '')}被拉黑后的消息：([\\s\\S]+?)\\]`));
         const textMatch = content.match(/\[(?:我在回复“.*?”时说|.*的消息)：([\s\S]+?)\]/);
         
         if (htmlCardMatch) {
@@ -6132,7 +6406,7 @@ function updateSettingsPreview(type) {
         const userBubble = createMessageBubbleElement(userMsg);
 
         if(aiBubble) previewArea.appendChild(aiBubble);
-        if(userBubble) previewArea.appendChild(userBubble);
+        if(userBubble) previewArea.appendChild(userMsg);
     }
     
     previewArea.querySelectorAll('.message-bubble .content').forEach(el => el.style.fontSize = `${fontSize}px`);
@@ -6873,7 +7147,7 @@ function setupGroupChatSettings() {
         });
     }
 
-    function handleMomentInteraction(e) { 
+       function handleMomentInteraction(e) { 
         const actionBtn = e.target.closest('[data-action]'); 
         const commentItem = e.target.closest('.moment-comment-item');
 
@@ -7344,7 +7618,357 @@ ${historyContext}
             await triggerAiReactions(moment.id);
         }
     }
+    
+    // --- NEW: Music App ---
+    function setupMusicApp() {
+        getEl('add-music-btn').addEventListener('click', () => {
+            getEl('add-music-form').reset();
+            getEl('add-music-modal').classList.add('visible');
+        });
 
+        getEl('add-music-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fileInput = getEl('add-music-file');
+            const urlInput = getEl('add-music-url');
+            const title = getEl('add-music-title').value.trim();
+            const artist = getEl('add-music-artist').value.trim();
+            
+            if (!title || !artist) {
+                return showToast('请填写歌曲名称和歌手');
+            }
+
+            let songUrl = urlInput.value.trim();
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                songUrl = URL.createObjectURL(file);
+            }
+
+            if (!songUrl) {
+                return showToast('请提供歌曲URL或上传本地文件');
+            }
+
+            const newTrack = {
+                id: `music_${Date.now()}`,
+                title: title,
+                artist: artist,
+                url: songUrl,
+                cover: getEl('add-music-cover').value.trim() || 'https://i.postimg.cc/KYzxf41g/IMG-20250828-151355.jpg'
+            };
+            
+            db.musicLibrary.push(newTrack);
+            saveData();
+            renderMusicPlayerUI();
+            getEl('add-music-modal').classList.remove('visible');
+                        showToast('歌曲已添加');
+        });
+
+        musicPlayer.addEventListener('timeupdate', updateMusicProgress);
+        musicPlayer.addEventListener('ended', handleTrackEnd);
+        
+        // Main player controls
+        getEl('play-pause-btn').addEventListener('click', togglePlayPause);
+        getEl('prev-btn').addEventListener('click', playPrevTrack);
+        getEl('next-btn').addEventListener('click', playNextTrack);
+        getEl('progress-bar').addEventListener('input', (e) => {
+            const newTime = musicPlayer.duration * (e.target.value / 100);
+            musicPlayer.currentTime = newTime;
+        });
+        
+        // Playback screen controls
+        getEl('playback-play-pause-btn').addEventListener('click', togglePlayPause);
+        getEl('playback-prev-btn').addEventListener('click', playPrevTrack);
+        getEl('playback-next-btn').addEventListener('click', playNextTrack);
+        getEl('playback-progress-bar').addEventListener('input', (e) => {
+            const newTime = musicPlayer.duration * (e.target.value / 100);
+            musicPlayer.currentTime = newTime;
+        });
+
+        // Dynamic Island controls
+        getEl('music-dynamic-island').addEventListener('click', (e) => {
+            const island = getEl('music-dynamic-island');
+            if (e.target.closest('#island-play-pause-btn')) {
+                e.stopPropagation();
+                togglePlayPause();
+            } else if (e.target.closest('#island-next-btn')) {
+                e.stopPropagation();
+                playNextTrack();
+            } else if (e.target.closest('#island-prev-btn')) {
+                e.stopPropagation();
+                playPrevTrack();
+            } else {
+                island.classList.toggle('expanded');
+            }
+        });
+
+        // Playback screen customization
+        getEl('customize-playback-btn').addEventListener('click', () => {
+            getEl('playback-customize-modal').classList.add('visible');
+        });
+
+        getEl('cover-upload-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            const trackId = db.musicPlayerState.currentTrackId;
+            if (file && trackId) {
+                const track = db.musicLibrary.find(t => t.id === trackId);
+                if (track) {
+                    try {
+                        const compressedUrl = await compressImage(file, { maxWidth: 500, maxHeight: 500 });
+                        track.cover = compressedUrl;
+                        saveData();
+                        // Update UI immediately
+                        getEl('record-cover').src = track.cover;
+                        getEl('player-cover-art').src = track.cover;
+                        getEl('music-playback-screen').querySelector('.playback-background').style.backgroundImage = `url(${track.cover})`;
+                        showToast('封面已更新');
+                    } catch (error) {
+                        showToast('封面处理失败');
+                    }
+                }
+            }
+            getEl('playback-customize-modal').classList.remove('visible');
+        });
+
+        getEl('playback-bg-upload-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                 try {
+                    const compressedUrl = await compressImage(file, { maxWidth: 800, maxHeight: 800 });
+                    db.musicPlayerState.playbackBg = compressedUrl;
+                    saveData();
+                    const bgEl = getEl('music-playback-screen').querySelector('.playback-background');
+                    bgEl.style.backgroundImage = `url(${compressedUrl})`;
+                    showToast('播放器背景已更新');
+                } catch (error) {
+                    showToast('背景处理失败');
+                }
+            }
+            getEl('playback-customize-modal').classList.remove('visible');
+        });
+    }
+
+    function renderMusicPlayerUI() {
+        const playlistEl = getEl('music-playlist');
+        playlistEl.innerHTML = '';
+
+        if (db.musicLibrary.length === 0) {
+            playlistEl.innerHTML = `<div class="placeholder-text" id="no-music-placeholder"><p>音乐库是空的</p><p>点击右上角的 "+" 添加第一首歌吧！</p></div>`;
+        } else {
+            db.musicLibrary.forEach(track => {
+                const item = document.createElement('div');
+                item.className = 'music-playlist-item';
+                item.dataset.id = track.id;
+                item.innerHTML = `
+                    <img src="${track.cover}" class="cover-art" alt="Cover">
+                    <div class="track-info">
+                        <div class="track-title">${track.title}</div>
+                        <div class="track-artist">${track.artist}</div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    if (isSharingMusic) {
+                        shareMusic(track.id);
+                    } else {
+                        switchScreen('music-playback-screen');
+                        loadAndPlayTrack(track.id);
+                    }
+                });
+                
+                if (track.id === db.musicPlayerState.currentTrackId) {
+                    item.classList.add('playing');
+                }
+
+                playlistEl.appendChild(item);
+            });
+        }
+        updatePlayerControls();
+    }
+    
+    function loadAndPlayTrack(trackId) {
+        const track = db.musicLibrary.find(t => t.id === trackId);
+        if (!track) return;
+
+        db.musicPlayerState.currentTrackId = trackId;
+        
+        const backgroundEl = getEl('music-playback-screen').querySelector('.playback-background');
+        backgroundEl.style.backgroundImage = `url(${db.musicPlayerState.playbackBg || track.cover})`;
+        getEl('record-cover').src = track.cover;
+        getEl('playback-title').textContent = track.title;
+        getEl('playback-artist').textContent = track.artist;
+
+        musicPlayer.src = track.url;
+        musicPlayer.play();
+        db.musicPlayerState.isPlaying = true;
+        
+        updateAllPlayPauseStates(true);
+        updatePlayerControls(); // update main player bar as well
+        document.querySelectorAll('.music-playlist-item').forEach(el => {
+            el.classList.toggle('playing', el.dataset.id === trackId);
+        });
+        saveData();
+    }
+
+    function togglePlayPause() {
+        if (!db.musicPlayerState.currentTrackId && db.musicLibrary.length > 0) {
+            loadAndPlayTrack(db.musicLibrary[0].id);
+            if (getEl('music-player-screen').classList.contains('active')) {
+                switchScreen('music-playback-screen');
+            }
+            return;
+        }
+
+        if (musicPlayer.paused) {
+            musicPlayer.play();
+            db.musicPlayerState.isPlaying = true;
+        } else {
+            musicPlayer.pause();
+            db.musicPlayerState.isPlaying = false;
+        }
+        updateAllPlayPauseStates(db.musicPlayerState.isPlaying);
+        saveData();
+    }
+
+    function playNextTrack() {
+        const currentIdx = db.musicLibrary.findIndex(t => t.id === db.musicPlayerState.currentTrackId);
+        if (currentIdx > -1) {
+            const nextIdx = (currentIdx + 1) % db.musicLibrary.length;
+            loadAndPlayTrack(db.musicLibrary[nextIdx].id);
+        }
+    }
+
+    function playPrevTrack() {
+        const currentIdx = db.musicLibrary.findIndex(t => t.id === db.musicPlayerState.currentTrackId);
+        if (currentIdx > -1) {
+            const prevIdx = (currentIdx - 1 + db.musicLibrary.length) % db.musicLibrary.length;
+            loadAndPlayTrack(db.musicLibrary[prevIdx].id);
+        }
+    }
+    
+    function updateAllPlayPauseStates(isPlaying) {
+        const recordCover = getEl('record-cover');
+        if(recordCover) recordCover.classList.toggle('playing', isPlaying);
+
+        // Main player
+        getEl('play-icon').style.display = isPlaying ? 'none' : 'block';
+        getEl('pause-icon').style.display = isPlaying ? 'block' : 'none';
+
+        // Playback screen
+        getEl('playback-play-icon').style.display = isPlaying ? 'none' : 'block';
+        getEl('playback-pause-icon').style.display = isPlaying ? 'block' : 'none';
+
+        // Dynamic Island
+        const island = getEl('music-dynamic-island');
+        if (island.classList.contains('visible')) {
+            showDynamicIsland(); // Re-render to get correct icon
+        }
+    }
+
+    function updatePlayerControls() {
+        const currentTrack = db.musicLibrary.find(t => t.id === db.musicPlayerState.currentTrackId);
+        if (currentTrack) {
+            getEl('player-cover-art').src = currentTrack.cover;
+            getEl('player-track-info').querySelector('.title').textContent = currentTrack.title;
+            getEl('player-track-info').querySelector('.artist').textContent = currentTrack.artist;
+        } else {
+            getEl('player-cover-art').src = 'https://i.postimg.cc/85Kw35v6/IMG-20250804-223821.jpg';
+            getEl('player-track-info').querySelector('.title').textContent = '选择一首歌';
+            getEl('player-track-info').querySelector('.artist').textContent = '...';
+        }
+        updateAllPlayPauseStates(db.musicPlayerState.isPlaying);
+    }
+    
+    function updateMusicProgress() {
+        if (musicPlayer.duration) {
+            const progressPercent = (musicPlayer.currentTime / musicPlayer.duration) * 100;
+            const formatTime = (secs) => {
+                const minutes = Math.floor(secs / 60) || 0;
+                const seconds = Math.floor(secs % 60) || 0;
+                return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            };
+
+            // Main player
+            getEl('progress-bar').value = progressPercent;
+            getEl('current-time').textContent = formatTime(musicPlayer.currentTime);
+            getEl('total-duration').textContent = formatTime(musicPlayer.duration);
+            
+            // Playback screen
+            getEl('playback-progress-bar').value = progressPercent;
+            getEl('playback-current-time').textContent = formatTime(musicPlayer.currentTime);
+            getEl('playback-total-duration').textContent = formatTime(musicPlayer.duration);
+        }
+    }
+    
+    function handleTrackEnd() {
+        db.musicPlayerState.isPlaying = false;
+        updateAllPlayPauseStates(false);
+        playNextTrack(); // Auto-play next song
+    }
+    
+    function shareMusic(trackId) {
+        const track = db.musicLibrary.find(t => t.id === trackId);
+        if (!track) return;
+
+        const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
+        const assignedMe = (currentChatType === 'private') ? db.meProfiles.find(p => p.id === chat.assignedMeId) || db.meProfiles[0] : { myName: chat.me.nickname };
+        
+        const musicCardHTML = `
+            <div class="music-card" data-music-id="${track.id}">
+                <img src="${track.cover}" class="album-art" alt="Cover">
+                <div class="music-info">
+                    <div class="title">${track.title}</div>
+                    <div class="artist">${track.artist}</div>
+                </div>
+            </div>`;
+
+        const message = {
+            id: `msg_${Date.now()}`,
+            role: 'user',
+            content: `[html_card:${musicCardHTML.replace(/"/g, "'")}]`, 
+            aiContent: `[${assignedMe.myName}分享了一首歌：${track.title} - ${track.artist}]`,
+            timestamp: Date.now()
+        };
+        if(currentChatType === 'group') message.senderId = 'user_me';
+        
+        chat.history.push(message);
+        saveData();
+        
+        isSharingMusic = false; // Reset flag after sharing
+        openChatRoom(chat.id, chat.type); // Go back to chat
+        addMessageBubble(message);
+        renderChatList();
+    }
+    
+    function showDynamicIsland() {
+        const island = getEl('music-dynamic-island');
+        const currentTrack = db.musicLibrary.find(t => t.id === db.musicPlayerState.currentTrackId);
+        if (!currentTrack) return;
+        
+        const playIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>`;
+        const pauseIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>`;
+        const prevIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" /></svg>`;
+        const nextIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" /></svg>`;
+
+        island.innerHTML = `
+            <img id="island-cover-art" src="${currentTrack.cover}">
+            <div id="island-info">
+                <span id="island-track-title">${currentTrack.title}</span>
+                <span id="island-track-artist">${currentTrack.artist}</span>
+            </div>
+            <div id="island-controls">
+                <button id="island-prev-btn" class="player-btn">${prevIcon}</button>
+                <button id="island-play-pause-btn" class="player-btn">
+                    ${db.musicPlayerState.isPlaying ? pauseIcon : playIcon}
+                </button>
+                <button id="island-next-btn" class="player-btn">${nextIcon}</button>
+            </div>
+        `;
+        island.classList.add('visible');
+    }
+
+    function hideDynamicIsland() {
+        const island = getEl('music-dynamic-island');
+        island.classList.remove('visible');
+        island.classList.remove('expanded');
+    }
 
     init();
 });
