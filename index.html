@@ -20,7 +20,7 @@
             --text-secondary: #6D6D6D;
             --white-color: #fff;
             --border-radius: 8px; /* MODIFIED: Reduced for WeChat-like style */
-            --phone-corner-radius: 40px; /* MODIFIED: More rounded corners for the phone body */
+            --phone-corner-radius: 20px; /* MODIFIED: Larger radius for desktop view */
             --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --online-status-color: #4CAF50;
             --nav-footer-bg: #f7f7f7;
@@ -35,44 +35,24 @@
         }
         
         *, *::before, *::after { box-sizing: border-box; }
-        
-        /* --- NEW: 自适应布局 --- */
+        /* MODIFIED: Improved body for responsiveness */
         body {
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 1rem; /* 为小屏幕边缘留出空间 */
+            font-family: var(--font-family); margin: 0; padding: 20px;
+            box-sizing: border-box;
             background: linear-gradient(135deg, var(--bg-color), var(--secondary-color));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            box-sizing: border-box; /* 确保padding不会导致溢出 */
+            display: flex; align-items: center; justify-content: center; min-height: 100vh;
         }
 
+        /* MODIFIED: Improved phone-screen for responsiveness */
         .phone-screen {
-            width: 100%;
-            height: 100%;
-            /* 在大屏幕上强制维持手机比例 */
-            max-width: 450px;
-            max-height: calc(100vh - 2rem); /* 留出上下边距 */
-            aspect-ratio: 9 / 19.5; /* 关键：强制维持一个接近iPhone的屏幕比例 */
+            width: 100%; max-width: 420px;
+            height: 100%; max-height: 850px;
+            aspect-ratio: 9 / 19.5; /* Maintain phone-like proportions */
             background-color: var(--white-color);
-            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2), 
-                        inset 0 0 0 8px #111; /* 增加模拟边框和更柔和的阴影 */
+            box-shadow: 0 10px V30px rgba(0, 0, 0, 0.15);
             border-radius: var(--phone-corner-radius);
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 当屏幕足够宽时，让手机模拟器的高度成为主要约束 */
-        @media (min-width: 480px) {
-            .phone-screen {
-                width: auto; /* 宽度由高度和比例决定 */
-                height: 88vh; /* 使用视窗高度的一个比例 */
-                max-height: 850px; /* 限制最大高度 */
-            }
+            overflow: hidden; position: relative;
+            display: flex; flex-direction: column;
         }
         
         .screen {
@@ -96,7 +76,6 @@
          z-index: 2;
         }
 
-
         @keyframes click-effect {
             0% { transform: scale(1); }
             50% { transform: scale(0.95); }
@@ -108,7 +87,6 @@
         .app-icon:active, .list-item:active, .btn:active, .qq-nav-btn:active, .plus-menu-item:active, .action-sheet-button:active, .sticker-item:active {
             animation: click-effect 0.2s ease-in-out;
         }
-
 
         .app-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -247,7 +225,7 @@
         #persona-edit-modal, #edit-group-member-modal, #create-member-for-group-modal,
         #world-book-selection-modal, #invite-member-modal, #theme-selection-modal, 
         #custom-theme-modal, #pat-pat-modal, #send-location-modal, #monologue-modal,
-        #add-music-modal, #playback-customize-modal {
+        #add-music-modal, #music-settings-modal { /* Added music-settings-modal */
             z-index: 102; 
         }
 
@@ -458,7 +436,6 @@
         .message-bubble.message-bubble-html-card::before {
             display: none !important;
         }
-
 
         #chat-room-screen.has-custom-css .message-bubble {
             background: transparent !important;
@@ -842,6 +819,7 @@
             opacity: 1;
         }
         
+        /* NEW: Music Card Style */
         .music-card {
             width: 230px;
             background: white;
@@ -1038,7 +1016,6 @@
         .api-manager-btn.btn-danger:hover {
             background-color: #ffccbc !important;
         }
-
 
         .wallpaper-preview { width: 100%; aspect-ratio: 9 / 16; max-height: 400px; border-radius: var(--border-radius); margin-bottom: 15px; background-size: cover; background-position: center; border: 3px dashed var(--primary-color); display: flex; align-items: center; justify-content: center; color: var(--secondary-color); font-style: italic; background-color: var(--bg-color); }
         
@@ -1934,167 +1911,44 @@
             color: #888;
             font-size: 14px;
         }
+        /* MODIFIED: Mini player styles */
         .music-player-controls {
             flex-shrink: 0;
-            padding: 20px;
-            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            padding: 8px 15px;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
             background-color: #f7f7f7;
             border-top: 1px solid #eee;
-            text-align: center;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            cursor: pointer;
+            height: 60px;
+            box-sizing: content-box;
         }
         .music-player-track-display {
             display: flex;
             align-items: center;
             gap: 15px;
-            margin-bottom: 15px;
             text-align: left;
         }
         #player-cover-art {
-            width: 60px;
-            height: 60px;
+            width: 45px;
+            height: 45px;
             border-radius: var(--border-radius);
             object-fit: cover;
         }
         #player-track-info .title {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: bold;
         }
         #player-track-info .artist {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
         }
-        .progress-container {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        #progress-bar, #playback-progress-bar {
-            width: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 4px;
-            background: #ddd;
-            border-radius: 2px;
-            outline: none;
-            cursor: pointer;
-        }
-        #progress-bar::-webkit-slider-thumb, #playback-progress-bar::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-        }
+        .progress-container,
         .player-buttons {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-        }
-        .player-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-        .player-btn svg {
-            width: 28px;
-            height: 28px;
-            fill: #555;
-        }
-        #play-pause-btn svg {
-            width: 48px;
-            height: 48px;
+            display: none; /* Hide in mini player */
         }
         
-        /* --- NEW: 灵动岛增强样式 --- */
-        #music-dynamic-island {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translate(-50%, -150%);
-            z-index: 1002;
-            background-color: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            display: flex;
-            cursor: pointer;
-            min-width: 120px;
-            height: 40px;
-            padding: 5px 10px;
-            gap: 8px;
-            border-radius: 20px;
-            align-items: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        #music-dynamic-island.visible {
-            transform: translate(-50%, 0);
-        }
-        #music-dynamic-island.expanded {
-            width: 90%;
-            max-width: 380px;
-            height: 70px;
-            padding: 10px 15px;
-        }
-        #island-cover-art {
-            width: 30px;
-            height: 30px;
-            border-radius: 15px;
-            object-fit: cover;
-            transition: all 0.4s ease;
-        }
-        #music-dynamic-island.expanded #island-cover-art {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-        }
-        #island-info {
-            flex-grow: 1;
-            overflow: hidden;
-            text-align: left;
-        }
-        #island-track-title {
-            font-size: 13px;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        #island-track-artist {
-            font-size: 11px;
-            color: #ccc;
-            display: none; /* 默认隐藏 */
-        }
-        #music-dynamic-island.expanded #island-track-artist {
-            display: block; /* 展开时显示 */
-        }
-        #island-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        #island-play-pause-btn, #island-prev-btn, #island-next-btn {
-            background: none;
-            border: none;
-            padding: 5px;
-        }
-        #island-play-pause-btn svg, #island-prev-btn svg, #island-next-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: white;
-        }
-        #music-dynamic-island:not(.expanded) #island-prev-btn,
-        #music-dynamic-island:not(.expanded) #island-next-btn {
-            display: none;
-        }
-
-        /* --- NEW: 音乐播放界面样式 --- */
+        /* NEW: Full-screen playback styles */
         #music-playback-screen {
             background-color: #333;
             color: white;
@@ -2104,46 +1958,167 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
-            filter: blur(20px) brightness(0.6);
-            transform: scale(1.1);
-            transition: background-image 0.5s ease-in-out;
+            filter: blur(30px) brightness(0.6);
+            transform: scale(1.2);
+            z-index: 0;
         }
-        .record-player {
+        #music-playback-screen .app-header, 
+        #music-playback-screen .content,
+        #music-playback-screen .playback-footer {
+            position: relative;
+            z-index: 1;
+        }
+        #playback-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding-top: 0;
+        }
+        .vinyl-record-container {
+            position: relative;
             width: 280px;
             height: 280px;
-            margin: 40px auto;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin-top: -50px;
         }
-        .record-cover {
+        .vinyl-record {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            object-fit: cover; /* 核心：裁剪图片以适应圆形 */
-            border: 10px solid #111;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            animation: rotateRecord 20s linear infinite;
-            animation-play-state: paused; /* 默认暂停 */
+            background: radial-gradient(circle, #222 35%, #111 36%, #111 100%);
+            box-shadow: 0 0 25px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: rotate-vinyl 10s linear infinite;
+            animation-play-state: paused;
         }
-        .record-cover.playing {
-            animation-play-state: running; /* 播放时旋转 */
+        .vinyl-record.playing {
+            animation-play-state: running;
         }
-        @keyframes rotateRecord {
+        #playback-cover-art {
+            width: 65%;
+            height: 65%;
+            border-radius: 50%;
+            object-fit: cover;
+            padding: 3px;
+            background-color: #fff;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        @keyframes rotate-vinyl {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        #playback-controls svg {
-            width: 32px; height: 32px;
+        .playback-footer {
+            flex-shrink: 0;
+            padding: 20px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
         }
-        #playback-play-pause-btn svg {
-            width: 52px; height: 52px;
+        .playback-footer .progress-container,
+        .playback-footer .player-buttons {
+            display: flex; /* Show in full-screen player */
+        }
+        .playback-footer .progress-container {
+             width: 100%;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        #playback-progress-bar {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
         }
         #playback-progress-bar::-webkit-slider-thumb {
-            background: var(--white-color);
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .playback-footer .player-buttons {
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        .playback-footer .player-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: #fff;
+        }
+        #playback-play-pause-btn svg {
+            width: 48px;
+            height: 48px;
+        }
+        .playback-footer .play-icon, .playback-footer .pause-icon { display: block; } /* Ensure visibility */
+
+        /* MODIFIED: Dynamic Island Styles */
+        #music-dynamic-island {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1002;
+            background-color: black;
+            border-radius: 50px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            display: none;
+            width: 120px;
+            height: 40px;
+            padding: 5px;
+        }
+        #music-dynamic-island.visible {
+            display: block;
+        }
+        #music-dynamic-island.expanded {
+            width: 95%;
+            max-width: 400px;
+            height: 80px;
         }
 
+        .island-collapsed, .island-expanded {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+        #music-dynamic-island.expanded .island-collapsed,
+        #music-dynamic-island:not(.expanded) .island-expanded {
+            display: none;
+        }
+
+        #island-cover-art-small { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-left: 5px; }
+        .island-waveform { display: flex; align-items: flex-end; height: 16px; gap: 2px; }
+        .island-waveform span { width: 3px; background: var(--online-status-color); border-radius: 2px; animation: wave 1.2s infinite ease-in-out; }
+        .island-waveform span:nth-child(2) { animation-delay: -1.0s; }
+        .island-waveform span:nth-child(3) { animation-delay: -0.8s; }
+        #music-dynamic-island:not(.playing) .island-waveform span { animation: none; height: 3px; }
+
+        @keyframes wave {
+            0%, 40%, 100% { height: 3px; }
+            20% { height: 16px; }
+        }
+
+        #island-cover-art-large { width: 60px; height: 60px; border-radius: 12px; margin-left: 10px; object-fit: cover; }
+        .island-track-info { flex-grow: 1; padding: 0 10px; overflow: hidden; }
+        #island-track-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #island-track-artist { font-size: 13px; color: #aaa; }
+        .island-controls { display: flex; align-items: center; }
+        .island-btn { background: none; border: none; }
+        .island-btn svg { width: 24px; height: 24px; fill: white; }
+        #island-play-pause-btn svg { width: 32px; height: 32px; }
     </style>
 </head>
 <body>
@@ -2155,7 +2130,28 @@
                 <div class="message"></div>
             </div>
         </div>
-        <div id="music-dynamic-island"></div>
+        <div id="music-dynamic-island">
+            <!-- Collapsed State -->
+            <div class="island-collapsed">
+                <img id="island-cover-art-small" src="" alt="Cover">
+                <div class="island-waveform">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+            <!-- Expanded State -->
+            <div class="island-expanded">
+                <img id="island-cover-art-large" src="" alt="Cover">
+                <div class="island-track-info">
+                    <div id="island-track-title">歌曲名</div>
+                    <div id="island-track-artist">歌手</div>
+                </div>
+                <div class="island-controls">
+                    <button class="player-btn island-btn" id="island-prev-btn"><svg viewBox="0 0 24 24"><path d="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" /></svg></button>
+                    <button class="player-btn island-btn" id="island-play-pause-btn"></button>
+                    <button class="player-btn island-btn" id="island-next-btn"><svg viewBox="0 0 24 24"><path d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" /></svg></button>
+                </div>
+            </div>
+        </div>
         <div id="home-screen" class="screen active"></div>
         <div id="chat-list-screen" class="screen"></div>
         <div id="chat-room-screen" class="screen"></div>
@@ -2170,7 +2166,40 @@
         <div id="video-call-screen" class="screen"></div>
         <div id="outgoing-call-screen" class="screen"></div>
         <div id="music-player-screen" class="screen"></div>
-        <div id="music-playback-screen" class="screen"></div>
+        <!-- NEW: Full-screen music playback interface -->
+        <div id="music-playback-screen" class="screen">
+            <div class="playback-background"></div>
+            <header class="app-header" style="background: transparent; border: none;">
+                <button class="back-btn" data-target="music-player-screen" style="color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">‹</button>
+                <div class="title-container" style="color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                    <h1 class="title" id="playback-track-title">歌曲名</h1>
+                    <div class="subtitle" id="playback-track-artist" style="color: #eee;">歌手</div>
+                </div>
+                <div class="placeholder"></div>
+            </header>
+            <main class="content" id="playback-content">
+                <div class="vinyl-record-container">
+                    <div class="vinyl-record" id="vinyl-record-player">
+                        <img src="https://i.postimg.cc/KYzxf41g/IMG-20250828-151355.jpg" id="playback-cover-art" alt="Cover Art">
+                    </div>
+                </div>
+            </main>
+            <footer class="playback-footer">
+                <div class="progress-container">
+                    <span id="playback-current-time">0:00</span>
+                    <input type="range" id="playback-progress-bar" value="0" min="0" max="100" step="0.1">
+                    <span id="playback-total-duration">0:00</span>
+                </div>
+                <div class="player-buttons">
+                    <button class="player-btn"><svg viewBox="0 0 24 24"><path d="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" /></svg></button>
+                    <button class="player-btn" id="playback-play-pause-btn">
+                        <svg viewBox="0 0 24 24" class="play-icon"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
+                        <svg viewBox="0 0 24 24" class="pause-icon" style="display:none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>
+                    </button>
+                    <button class="player-btn"><svg viewBox="0 0 24 24"><path d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" /></svg></button>
+                </div>
+            </footer>
+        </div>
         
         <!-- Memory Core Screens -->
         <div id="memory-core-screen" class="screen"></div>
@@ -2198,6 +2227,7 @@
         <div id="send-location-modal" class="modal-overlay"></div>
         <div id="incoming-call-modal" class="modal-overlay"></div>
         <div id="add-music-modal" class="modal-overlay"></div>
+        <div id="music-settings-modal" class="modal-overlay"></div>
         <div id="monologue-modal" class="modal-overlay">
             <div class="modal-window" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); color: white;">
                 <h3 style="color: #ff80ab;">TA的心声</h3>
@@ -2379,7 +2409,7 @@ function injectHTML() {
     </main>`,
         'font-settings-screen': ``,
         'tutorial-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">教程</h1></div><div class="placeholder"></div></header><main class="content" id="tutorial-content-area"></main>`,
-        'music-player-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">音乐</h1></div><button class="action-btn" id="add-music-btn">+</button></header>
+        'music-player-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">音乐</h1></div><div class="action-btn-group"><button class="action-btn" id="music-settings-btn">${settingsIconSVG}</button><button class="action-btn" id="add-music-btn">+</button></div></header>
 <main class="content">
     <div id="music-playlist">
         <div class="placeholder-text" id="no-music-placeholder"><p>音乐库是空的</p><p>点击右上角的 "+" 添加第一首歌吧！</p></div>
@@ -2407,54 +2437,6 @@ function injectHTML() {
         </div>
     </div>
 </main>`,
-        'music-playback-screen': `
-            <div class="playback-background"></div>
-            <header class="app-header" style="background: transparent; border: none;">
-                <button class="back-btn" data-target="music-player-screen" style="color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">‹</button>
-                <div class="title-container" style="color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
-                    <h1 class="title" id="playback-title">歌曲名</h1>
-                    <h2 class="subtitle" id="playback-artist" style="color: #eee;">歌手</h2>
-                </div>
-                <div class="action-btn-group">
-                    <button class="action-btn" id="customize-playback-btn" style="color: white; font-size: 24px;">🎨</button>
-                </div>
-            </header>
-            <main class="content" style="text-align: center; padding-top: 20px; color: white; display:flex; align-items:center; justify-content:center;">
-                <div class="record-player">
-                    <img src="https://i.postimg.cc/KYzxf41g/IMG-20250828-151355.jpg" alt="唱片封面" id="record-cover" class="record-cover">
-                </div>
-            </main>
-            <div class="music-player-controls" id="playback-controls" style="background: transparent; position: absolute; bottom: 0; width: 100%;">
-                <div class="progress-container" style="padding: 0 20px;">
-                    <span id="playback-current-time" style="color:white;">0:00</span>
-                    <input type="range" id="playback-progress-bar" value="0" min="0" max="100" step="0.1">
-                    <span id="playback-total-duration" style="color:white;">0:00</span>
-                </div>
-                <div class="player-buttons">
-                    <button class="player-btn" id="playback-prev-btn"><svg viewBox="0 0 24 24"><path fill="white" d="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" /></svg></button>
-                    <button class="player-btn" id="playback-play-pause-btn">
-                        <svg viewBox="0 0 24 24" id="playback-play-icon"><path fill="white" d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
-                        <svg viewBox="0 0 24 24" id="playback-pause-icon" style="display:none;"><path fill="white" d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>
-                    </button>
-                    <button class="player-btn" id="playback-next-btn"><svg viewBox="0 0 24 24"><path fill="white" d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" /></svg></button>
-                </div>
-            </div>
-            <div id="playback-customize-modal" class="modal-overlay">
-                <div class="modal-window">
-                    <h3>播放器美化</h3>
-                    <div class="form-group">
-                        <label>更换唱片封面 (仅当前歌曲)</label>
-                        <input type="file" id="cover-upload-input" accept="image/*" style="display: none;">
-                        <label for="cover-upload-input" class="btn btn-secondary">选择图片</label>
-                    </div>
-                    <div class="form-group">
-                        <label>更换播放器背景 (全局)</label>
-                        <input type="file" id="playback-bg-upload-input" accept="image/*" style="display: none;">
-                        <label for="playback-bg-upload-input" class="btn btn-primary">选择图片</label>
-                    </div>
-                </div>
-            </div>
-        `,
         'memory-core-screen': `<header class="app-header"><button class="back-btn" data-target="home-screen">‹</button><div class="title-container"><h1 class="title">记忆核心</h1></div><div class="action-btn-group"><button class="action-btn" id="add-memory-btn">+</button><button class="action-btn" id="memory-settings-btn">${settingsIconSVG}</button></div></header><main class="content"><ul class="list-container" id="memory-core-list-container"></ul><div class="placeholder-text" id="no-memories-placeholder" style="display: none;"><p>AI还没有任何记忆...</p><p>在聊天设置中为角色提取记忆，或点击"+"添加全局记忆吧！</p></div></main>`,
         'edit-memory-screen': `<header class="app-header"><button class="back-btn" data-target="memory-core-screen">‹</button><div class="title-container"><h1 class="title" id="edit-memory-screen-title">创建/编辑记忆</h1></div><div class="placeholder"></div></header><main class="content"><form id="edit-memory-form"><input type="hidden" id="memory-id"><div class="form-group" id="memory-topic-group"><label for="memory-topic">记忆主题 (简短概括)</label><input type="text" id="memory-topic" placeholder="例如：用户生日、宠物名字" required></div><div class="form-group"><label for="memory-content">记忆内容 (详细信息)</label><textarea id="memory-content" rows="12" placeholder="详细描述这条记忆..." required></textarea></div><button type="submit" class="btn btn-primary">保存记忆</button></form></main>`,
         'memory-core-settings-screen': `<header class="app-header"><button class="back-btn" data-target="memory-core-screen">‹</button><div class="title-container"><h1 class="title">记忆核心设置</h1></div><div class="placeholder"></div></header><main class="content"><form id="memory-settings-form"><div class="form-group"><label for="memory-injection-prompt">记忆注入提示词</label><textarea id="memory-injection-prompt" rows="8" placeholder="描述如何将角色的个人记忆注入到主提示词中。使用 {{memories}} 作为记忆内容的占位符。"></textarea></div><div class="form-group"><label for="memory-extraction-prompt">记忆提取提示词</label><textarea id="memory-extraction-prompt" rows="8" placeholder="描述如何从对话历史中提取和总结新的记忆点。使用 {{history}} 作为对话历史占位符，{{memories}} 作为已有记忆占位符。"></textarea></div><button type="submit" class="btn btn-primary">保存设置</button></form></main>`,
@@ -2504,16 +2486,29 @@ function injectHTML() {
                 </div>
                 <div class="form-group">
                     <label for="add-music-url">歌曲文件URL</label>
-                    <input type="url" id="add-music-url" placeholder="https://.../song.mp3">
+                    <input type="url" id="add-music-url" placeholder="https://.../song.mp3" required>
                 </div>
-                <p style="text-align:center; color:#888; margin: -5px 0 10px;">或</p>
-                <input type="file" id="add-music-file" accept=".mp3, audio/*" style="display:none;">
-                <label for="add-music-file" class="btn btn-secondary" style="margin-bottom: 15px;">从本地上传歌曲</label>
+                <p style="text-align:center; color:#888; margin: -10px 0 15px;">或</p>
+                <input type="file" id="local-music-upload" accept=".mp3" style="display: none;">
+                <label for="local-music-upload" class="btn btn-secondary" style="width:100%; margin-bottom: 20px;">从本地导入 MP3</label>
                 <div class="form-group">
                     <label for="add-music-cover">封面图片URL (可选)</label>
                     <input type="url" id="add-music-cover" placeholder="https://.../cover.jpg">
                 </div>
                 <button type="submit" class="btn btn-primary">添加</button>
+            </form>
+        </div>`,
+        'music-settings-modal': `
+        <div class="modal-window">
+            <h3>播放器美化</h3>
+            <form id="music-settings-form">
+                <div class="form-group">
+                    <label>播放界面背景</label>
+                    <div class="wallpaper-preview" id="music-bg-preview" style="height:150px; margin-bottom:10px;"></div>
+                    <input type="file" id="music-bg-upload" accept="image/*" style="display:none;">
+                    <label for="music-bg-upload" class="btn btn-secondary">更换背景</label>
+                </div>
+                <button type="submit" class="btn btn-primary">关闭</button>
             </form>
         </div>`,
         'chat-settings-sidebar': `<div class="header">对话设定</div><div class="content"><form id="chat-settings-form">
@@ -2886,9 +2881,9 @@ const loadData = () => {
             isPlaying: false,
             currentTime: 0,
             isShuffled: false,
-            repeatMode: 'none', // 'none', 'one', 'all'
-            playbackBg: '' // NEW: for custom background
-        }
+            repeatMode: 'none' // 'none', 'one', 'all'
+        },
+        musicPlayerBackground: 'default'
     };
     db = data ? { ...defaultDb, ...JSON.parse(data) } : defaultDb;
     
@@ -2964,16 +2959,18 @@ const showToast = (message) => { const el = getEl('toast-notification'); el.text
 const switchScreen = (targetId) => {
     removeContextMenu();
     
-    // Dynamic Island Logic
-    const isMusicPlaying = !musicPlayer.paused;
+    // MODIFIED: Dynamic Island Logic
+    const isMusicPlaying = db.musicPlayerState.currentTrackId !== null;
     if (isMusicPlaying) {
         if (targetId !== 'music-player-screen' && targetId !== 'music-playback-screen') {
-            showDynamicIsland();
+            updateDynamicIsland();
+            getEl('music-dynamic-island').classList.add('visible');
         } else {
-            hideDynamicIsland();
+            getEl('music-dynamic-island').classList.remove('visible');
+            getEl('music-dynamic-island').classList.remove('expanded');
         }
     } else {
-        hideDynamicIsland();
+        getEl('music-dynamic-island').classList.remove('visible');
     }
 
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -3031,7 +3028,6 @@ function applyGlobalFont(fontUrl) {
     document.head.appendChild(styleElement);
 }
 
-
 function applyCustomCss(chatId, css, preview = false) {
     const chatRoomEl = getEl('chat-room-screen');
     const type = currentChatType;
@@ -3060,7 +3056,6 @@ function applyCustomCss(chatId, css, preview = false) {
 
     styleElement.textContent = scopedCss; 
 }
-
 
 const init = () => {
     injectHTML();
@@ -3761,8 +3756,8 @@ function setupChatRoom() {
         }
         const musicCard = e.target.closest('.music-card');
         if (musicCard && musicCard.dataset.musicId) {
-            switchScreen('music-playback-screen');
-            loadAndPlayTrack(musicCard.dataset.musicId);
+            playMusic(musicCard.dataset.musicId);
+            switchScreen('music-player-screen');
         }
     });
     
@@ -4055,7 +4050,7 @@ function toggleStickerModal(forceState) {
             createContextMenu(menuItems, x, y);
         }
     }
-    function startReply(messageId) {
+        function startReply(messageId) {
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const message = chat.history.find(m => m.id === messageId);
         if (!message) return;
@@ -4113,33 +4108,17 @@ function toggleStickerModal(forceState) {
             renderChatList();
         }
     }
-        function startMessageEdit(messageId) {
-        exitMultiSelectMode();
-        editingMessageId = messageId;
-        const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
-        const message = chat.history.find(m => m.id === messageId);
-        if (!message) return;
-
-        const match = message.content.match(/\[.*?的消息：([\s\S]+)\]/);
-        const contentToEdit = match ? match[1].trim() : message.content;
-
-        getEl('message-edit-input').value = contentToEdit;
-        getEl('message-input-default').style.display = 'none';
-        getEl('message-edit-bar').style.display = 'flex';
-        getEl('message-edit-input').focus();
-    }
-
+    function startMessageEdit(messageId) { exitMultiSelectMode(); editingMessageId = messageId; const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId); const message = chat.history.find(m => m.id === messageId); if (!message) return; const match = message.content.match(/\[.*?的消息：([\s\S]+)\]/); const contentToEdit = match ? match[1].trim() : message.content; getEl('message-edit-input').value = contentToEdit; getEl('message-input-default').style.display = 'none'; getEl('message-edit-bar').style.display = 'flex'; getEl('message-edit-input').focus(); }
     function saveMessageEdit() {
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
         const messageIndex = chat.history.findIndex(m => m.id === editingMessageId);
         if (messageIndex === -1) return;
-        
         const newText = getEl('message-edit-input').value.trim();
         if (newText) {
             const oldContent = chat.history[messageIndex].content;
             const prefixMatch = oldContent.match(/(\[.*?的消息：)[\s\S]+\]/);
-            const prefix = prefixMatch ? prefixMatch[1] : `[${(chat.me?.nickname || '我')}的消息：`;
-            chat.history[messageIndex].content = `${prefix}${newText}]`; // Re-wrap the content
+            const prefix = prefixMatch ? prefixMatch[1] : '';
+            chat.history[messageIndex].content = `${prefix}${newText}]`;
             saveData();
             currentPage = 1;
             renderMessages(false, true);
@@ -4147,40 +4126,9 @@ function toggleStickerModal(forceState) {
         }
         cancelMessageEdit();
     }
-
-    function cancelMessageEdit() {
-        editingMessageId = null;
-        getEl('message-input-default').style.display = 'flex';
-        getEl('message-edit-bar').style.display = 'none';
-    }
-
-    function enterMultiSelectMode(initialMessageId) {
-        isInMultiSelectMode = true;
-        getEl('chat-room-header-default').style.display = 'none';
-        getEl('chat-room-header-select').style.display = 'flex';
-        document.querySelector('.chat-input-wrapper').style.display='none';
-        getEl('multi-select-bar').classList.add('visible');
-        getEl('chat-room-screen').classList.add('multi-select-active');
-        selectedMessageIds.clear();
-        if (initialMessageId) {
-            toggleMessageSelection(initialMessageId);
-        }
-    }
-
-    function exitMultiSelectMode() {
-        isInMultiSelectMode = false;
-        getEl('chat-room-header-default').style.display = 'flex';
-        getEl('chat-room-header-select').style.display = 'none';
-        document.querySelector('.chat-input-wrapper').style.display='block';
-        getEl('multi-select-bar').classList.remove('visible');
-        getEl('chat-room-screen').classList.remove('multi-select-active');
-        selectedMessageIds.forEach(id => {
-            const el = getEl('message-area').querySelector(`.message-wrapper[data-id="${id}"]`);
-            if (el) el.classList.remove('multi-select-selected');
-        });
-        selectedMessageIds.clear();
-    }
-
+    function cancelMessageEdit() { editingMessageId = null; getEl('message-input-default').style.display = 'flex'; getEl('message-edit-bar').style.display = 'none'; }
+    function enterMultiSelectMode(initialMessageId) { isInMultiSelectMode = true; getEl('chat-room-header-default').style.display = 'none'; getEl('chat-room-header-select').style.display = 'flex'; document.querySelector('.chat-input-wrapper').style.display='none'; getEl('multi-select-bar').classList.add('visible'); getEl('chat-room-screen').classList.add('multi-select-active'); selectedMessageIds.clear(); if (initialMessageId) { toggleMessageSelection(initialMessageId); } }
+    function exitMultiSelectMode() { isInMultiSelectMode = false; getEl('chat-room-header-default').style.display = 'flex'; getEl('chat-room-header-select').style.display = 'none'; document.querySelector('.chat-input-wrapper').style.display='block'; getEl('multi-select-bar').classList.remove('visible'); getEl('chat-room-screen').classList.remove('multi-select-active'); selectedMessageIds.forEach(id => { const el = getEl('message-area').querySelector(`.message-wrapper[data-id="${id}"]`); if (el) el.classList.remove('multi-select-selected'); }); selectedMessageIds.clear(); }
     function toggleMessageSelection(messageId) {
         const el = getEl('message-area').querySelector(`.message-wrapper[data-id="${messageId}"]`);
         if (!el) return;
@@ -4194,7 +4142,6 @@ function toggleStickerModal(forceState) {
         getEl('select-count').textContent = `已选择 ${selectedMessageIds.size} 项`;
         getEl('delete-selected-btn').disabled = selectedMessageIds.size === 0;
     }
-
     function deleteSelectedMessages() {
         if (selectedMessageIds.size === 0) return;
         const chat = (currentChatType === 'private') ? db.characters.find(c => c.id === currentChatId) : db.groups.find(g => g.id === currentChatId);
@@ -4388,7 +4335,7 @@ function toggleStickerModal(forceState) {
         
         if (htmlCardMatch) {
             bubbleWrapperClass += ' message-bubble-html-card';
-            bubbleContentHTML = htmlCardMatch[1];
+            bubbleContentHTML = htmlCardMatch[1].replace(/'/g, '"');
         } else if (/\[.*?的位置：([\s\S]+?)\]/.test(content) || locationData) {
             const locData = locationData || JSON.parse(content.match(/\[.*?的位置：([\s\S]+?)\]/)[1]);
             bubbleContentHTML = `
@@ -6406,7 +6353,7 @@ function updateSettingsPreview(type) {
         const userBubble = createMessageBubbleElement(userMsg);
 
         if(aiBubble) previewArea.appendChild(aiBubble);
-        if(userBubble) previewArea.appendChild(userMsg);
+        if(userBubble) previewArea.appendChild(userBubble);
     }
     
     previewArea.querySelectorAll('.message-bubble .content').forEach(el => el.style.fontSize = `${fontSize}px`);
@@ -7147,7 +7094,7 @@ function setupGroupChatSettings() {
         });
     }
 
-       function handleMomentInteraction(e) { 
+           function handleMomentInteraction(e) { 
         const actionBtn = e.target.closest('[data-action]'); 
         const commentItem = e.target.closest('.moment-comment-item');
 
@@ -7623,126 +7570,121 @@ ${historyContext}
     function setupMusicApp() {
         getEl('add-music-btn').addEventListener('click', () => {
             getEl('add-music-form').reset();
+            getEl('add-music-url').readOnly = false;
             getEl('add-music-modal').classList.add('visible');
+        });
+
+        getEl('local-music-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === 'audio/mpeg') {
+                const objectURL = URL.createObjectURL(file);
+                let filename = file.name.replace('.mp3', '');
+                let artist = '未知歌手';
+                let title = filename;
+
+                if (filename.includes(' - ')) {
+                    const parts = filename.split(' - ');
+                    artist = parts[0].trim();
+                    title = parts[1].trim();
+                }
+                
+                getEl('add-music-title').value = title;
+                getEl('add-music-artist').value = artist;
+                getEl('add-music-url').value = objectURL;
+                getEl('add-music-url').readOnly = true;
+                showToast('文件已加载，请确认信息并添加');
+            }
         });
 
         getEl('add-music-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const fileInput = getEl('add-music-file');
-            const urlInput = getEl('add-music-url');
-            const title = getEl('add-music-title').value.trim();
-            const artist = getEl('add-music-artist').value.trim();
-            
-            if (!title || !artist) {
-                return showToast('请填写歌曲名称和歌手');
-            }
-
-            let songUrl = urlInput.value.trim();
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                songUrl = URL.createObjectURL(file);
-            }
-
-            if (!songUrl) {
-                return showToast('请提供歌曲URL或上传本地文件');
-            }
-
             const newTrack = {
                 id: `music_${Date.now()}`,
-                title: title,
-                artist: artist,
-                url: songUrl,
-                cover: getEl('add-music-cover').value.trim() || 'https://i.postimg.cc/KYzxf41g/IMG-20250828-151355.jpg'
+                title: getEl('add-music-title').value.trim(),
+                artist: getEl('add-music-artist').value.trim(),
+                url: getEl('add-music-url').value.trim(),
+                cover: getEl('add-music-cover').value.trim() || 'https://i.postimg.cc/85Kw35v6/IMG-20250804-223821.jpg'
             };
-            
+            if (!newTrack.title || !newTrack.artist || !newTrack.url) {
+                return showToast('请填写歌曲名称、歌手和URL');
+            }
             db.musicLibrary.push(newTrack);
             saveData();
             renderMusicPlayerUI();
             getEl('add-music-modal').classList.remove('visible');
-                        showToast('歌曲已添加');
+            showToast('歌曲已添加');
+            getEl('add-music-url').readOnly = false;
         });
 
-        musicPlayer.addEventListener('timeupdate', updateMusicProgress);
+        const miniPlayer = getEl('music-player-screen').querySelector('.music-player-controls');
+        miniPlayer.addEventListener('click', (e) => {
+            if (e.target.closest('.player-btn')) return; 
+            if (db.musicPlayerState.currentTrackId) {
+                updatePlaybackScreenUI();
+                switchScreen('music-playback-screen');
+            } else {
+                showToast('请先选择一首歌');
+            }
+        });
+        
+        getEl('playback-play-pause-btn').addEventListener('click', togglePlayPause);
+        getEl('playback-progress-bar').addEventListener('input', (e) => {
+            if (musicPlayer.duration) {
+                const newTime = musicPlayer.duration * (e.target.value / 100);
+                musicPlayer.currentTime = newTime;
+            }
+        });
+
+        musicPlayer.addEventListener('timeupdate', () => {
+            updateMusicProgress();
+            updatePlaybackProgress();
+        });
         musicPlayer.addEventListener('ended', handleTrackEnd);
         
-        // Main player controls
-        getEl('play-pause-btn').addEventListener('click', togglePlayPause);
-        getEl('prev-btn').addEventListener('click', playPrevTrack);
-        getEl('next-btn').addEventListener('click', playNextTrack);
-        getEl('progress-bar').addEventListener('input', (e) => {
-            const newTime = musicPlayer.duration * (e.target.value / 100);
-            musicPlayer.currentTime = newTime;
-        });
-        
-        // Playback screen controls
-        getEl('playback-play-pause-btn').addEventListener('click', togglePlayPause);
-        getEl('playback-prev-btn').addEventListener('click', playPrevTrack);
-        getEl('playback-next-btn').addEventListener('click', playNextTrack);
-        getEl('playback-progress-bar').addEventListener('input', (e) => {
-            const newTime = musicPlayer.duration * (e.target.value / 100);
-            musicPlayer.currentTime = newTime;
-        });
-
-        // Dynamic Island controls
-        getEl('music-dynamic-island').addEventListener('click', (e) => {
-            const island = getEl('music-dynamic-island');
-            if (e.target.closest('#island-play-pause-btn')) {
-                e.stopPropagation();
-                togglePlayPause();
-            } else if (e.target.closest('#island-next-btn')) {
-                e.stopPropagation();
-                playNextTrack();
-            } else if (e.target.closest('#island-prev-btn')) {
-                e.stopPropagation();
-                playPrevTrack();
+        const island = getEl('music-dynamic-island');
+        island.addEventListener('click', (e) => {
+            if (e.target.closest('.player-btn')) return;
+            const currentScreen = document.querySelector('.screen.active').id;
+            if (currentScreen !== 'music-player-screen' && currentScreen !== 'music-playback-screen') {
+                 updatePlaybackScreenUI();
+                 switchScreen('music-playback-screen');
             } else {
                 island.classList.toggle('expanded');
             }
         });
 
-        // Playback screen customization
-        getEl('customize-playback-btn').addEventListener('click', () => {
-            getEl('playback-customize-modal').classList.add('visible');
+        getEl('island-play-pause-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            togglePlayPause();
         });
 
-        getEl('cover-upload-input').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            const trackId = db.musicPlayerState.currentTrackId;
-            if (file && trackId) {
-                const track = db.musicLibrary.find(t => t.id === trackId);
-                if (track) {
-                    try {
-                        const compressedUrl = await compressImage(file, { maxWidth: 500, maxHeight: 500 });
-                        track.cover = compressedUrl;
-                        saveData();
-                        // Update UI immediately
-                        getEl('record-cover').src = track.cover;
-                        getEl('player-cover-art').src = track.cover;
-                        getEl('music-playback-screen').querySelector('.playback-background').style.backgroundImage = `url(${track.cover})`;
-                        showToast('封面已更新');
-                    } catch (error) {
-                        showToast('封面处理失败');
-                    }
-                }
+        getEl('music-settings-btn').addEventListener('click', () => {
+            if (db.musicPlayerBackground && db.musicPlayerBackground !== 'default') {
+                getEl('music-bg-preview').style.backgroundImage = `url(${db.musicPlayerBackground})`;
+                 getEl('music-bg-preview').textContent = '';
+            } else {
+                getEl('music-bg-preview').style.backgroundImage = 'none';
+                getEl('music-bg-preview').textContent = '默认背景';
             }
-            getEl('playback-customize-modal').classList.remove('visible');
+            getEl('music-settings-modal').classList.add('visible');
         });
 
-        getEl('playback-bg-upload-input').addEventListener('change', async (e) => {
+        getEl('music-bg-upload').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
-                 try {
-                    const compressedUrl = await compressImage(file, { maxWidth: 800, maxHeight: 800 });
-                    db.musicPlayerState.playbackBg = compressedUrl;
+                try {
+                    const url = await compressImage(file, { quality: 0.85, maxWidth: 1080, maxHeight: 1920 });
+                    db.musicPlayerBackground = url;
                     saveData();
-                    const bgEl = getEl('music-playback-screen').querySelector('.playback-background');
-                    bgEl.style.backgroundImage = `url(${compressedUrl})`;
+                    getEl('music-bg-preview').style.backgroundImage = `url(${url})`;
                     showToast('播放器背景已更新');
-                } catch (error) {
-                    showToast('背景处理失败');
-                }
+                } catch (err) { showToast('背景图片处理失败'); }
             }
-            getEl('playback-customize-modal').classList.remove('visible');
+        });
+
+        getEl('music-settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            getEl('music-settings-modal').classList.remove('visible');
         });
     }
 
@@ -7768,8 +7710,7 @@ ${historyContext}
                     if (isSharingMusic) {
                         shareMusic(track.id);
                     } else {
-                        switchScreen('music-playback-screen');
-                        loadAndPlayTrack(track.id);
+                        playMusic(track.id);
                     }
                 });
                 
@@ -7783,24 +7724,18 @@ ${historyContext}
         updatePlayerControls();
     }
     
-    function loadAndPlayTrack(trackId) {
+    function playMusic(trackId) {
         const track = db.musicLibrary.find(t => t.id === trackId);
         if (!track) return;
-
-        db.musicPlayerState.currentTrackId = trackId;
         
-        const backgroundEl = getEl('music-playback-screen').querySelector('.playback-background');
-        backgroundEl.style.backgroundImage = `url(${db.musicPlayerState.playbackBg || track.cover})`;
-        getEl('record-cover').src = track.cover;
-        getEl('playback-title').textContent = track.title;
-        getEl('playback-artist').textContent = track.artist;
-
+        db.musicPlayerState.currentTrackId = trackId;
         musicPlayer.src = track.url;
         musicPlayer.play();
         db.musicPlayerState.isPlaying = true;
-        
-        updateAllPlayPauseStates(true);
-        updatePlayerControls(); // update main player bar as well
+
+        updatePlayerControls();
+        updateDynamicIsland();
+        updatePlaybackScreenUI();
         document.querySelectorAll('.music-playlist-item').forEach(el => {
             el.classList.toggle('playing', el.dataset.id === trackId);
         });
@@ -7809,10 +7744,7 @@ ${historyContext}
 
     function togglePlayPause() {
         if (!db.musicPlayerState.currentTrackId && db.musicLibrary.length > 0) {
-            loadAndPlayTrack(db.musicLibrary[0].id);
-            if (getEl('music-player-screen').classList.contains('active')) {
-                switchScreen('music-playback-screen');
-            }
+            playMusic(db.musicLibrary[0].id);
             return;
         }
 
@@ -7823,75 +7755,49 @@ ${historyContext}
             musicPlayer.pause();
             db.musicPlayerState.isPlaying = false;
         }
-        updateAllPlayPauseStates(db.musicPlayerState.isPlaying);
+        updatePlayerControls();
+        updateDynamicIsland();
+        updatePlaybackScreenUI();
         saveData();
     }
-
-    function playNextTrack() {
-        const currentIdx = db.musicLibrary.findIndex(t => t.id === db.musicPlayerState.currentTrackId);
-        if (currentIdx > -1) {
-            const nextIdx = (currentIdx + 1) % db.musicLibrary.length;
-            loadAndPlayTrack(db.musicLibrary[nextIdx].id);
-        }
-    }
-
-    function playPrevTrack() {
-        const currentIdx = db.musicLibrary.findIndex(t => t.id === db.musicPlayerState.currentTrackId);
-        if (currentIdx > -1) {
-            const prevIdx = (currentIdx - 1 + db.musicLibrary.length) % db.musicLibrary.length;
-            loadAndPlayTrack(db.musicLibrary[prevIdx].id);
-        }
-    }
     
-    function updateAllPlayPauseStates(isPlaying) {
-        const recordCover = getEl('record-cover');
-        if(recordCover) recordCover.classList.toggle('playing', isPlaying);
-
-        // Main player
-        getEl('play-icon').style.display = isPlaying ? 'none' : 'block';
-        getEl('pause-icon').style.display = isPlaying ? 'block' : 'none';
-
-        // Playback screen
-        getEl('playback-play-icon').style.display = isPlaying ? 'none' : 'block';
-        getEl('playback-pause-icon').style.display = isPlaying ? 'block' : 'none';
-
-        // Dynamic Island
-        const island = getEl('music-dynamic-island');
-        if (island.classList.contains('visible')) {
-            showDynamicIsland(); // Re-render to get correct icon
-        }
-    }
-
     function updatePlayerControls() {
         const currentTrack = db.musicLibrary.find(t => t.id === db.musicPlayerState.currentTrackId);
         if (currentTrack) {
             getEl('player-cover-art').src = currentTrack.cover;
             getEl('player-track-info').querySelector('.title').textContent = currentTrack.title;
             getEl('player-track-info').querySelector('.artist').textContent = currentTrack.artist;
-        } else {
-            getEl('player-cover-art').src = 'https://i.postimg.cc/85Kw35v6/IMG-20250804-223821.jpg';
-            getEl('player-track-info').querySelector('.title').textContent = '选择一首歌';
-            getEl('player-track-info').querySelector('.artist').textContent = '...';
         }
-        updateAllPlayPauseStates(db.musicPlayerState.isPlaying);
     }
     
     function updateMusicProgress() {
         if (musicPlayer.duration) {
             const progressPercent = (musicPlayer.currentTime / musicPlayer.duration) * 100;
+            // This is for the mini player, which no longer has a progress bar
+            // getEl('progress-bar').value = progressPercent;
+            
+            const formatTime = (secs) => {
+                const minutes = Math.floor(secs / 60) || 0;
+                const seconds = Math.floor(secs % 60) || 0;
+                return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            };
+            // This is also for the mini player, no longer visible
+            // getEl('current-time').textContent = formatTime(musicPlayer.currentTime);
+            // getEl('total-duration').textContent = formatTime(musicPlayer.duration);
+        }
+    }
+
+    function updatePlaybackProgress() {
+        if (musicPlayer.duration) {
+            const progressPercent = (musicPlayer.currentTime / musicPlayer.duration) * 100;
+            getEl('playback-progress-bar').value = progressPercent;
+            
             const formatTime = (secs) => {
                 const minutes = Math.floor(secs / 60) || 0;
                 const seconds = Math.floor(secs % 60) || 0;
                 return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
             };
 
-            // Main player
-            getEl('progress-bar').value = progressPercent;
-            getEl('current-time').textContent = formatTime(musicPlayer.currentTime);
-            getEl('total-duration').textContent = formatTime(musicPlayer.duration);
-            
-            // Playback screen
-            getEl('playback-progress-bar').value = progressPercent;
             getEl('playback-current-time').textContent = formatTime(musicPlayer.currentTime);
             getEl('playback-total-duration').textContent = formatTime(musicPlayer.duration);
         }
@@ -7899,8 +7805,9 @@ ${historyContext}
     
     function handleTrackEnd() {
         db.musicPlayerState.isPlaying = false;
-        updateAllPlayPauseStates(false);
-        playNextTrack(); // Auto-play next song
+        updatePlayerControls();
+        updateDynamicIsland();
+        updatePlaybackScreenUI();
     }
     
     function shareMusic(trackId) {
@@ -7937,37 +7844,46 @@ ${historyContext}
         renderChatList();
     }
     
-    function showDynamicIsland() {
+    function updateDynamicIsland() {
         const island = getEl('music-dynamic-island');
+        const track = db.musicLibrary.find(t => t.id === db.musicPlayerState.currentTrackId);
+        if (!track) {
+            island.classList.remove('visible');
+            return;
+        }
+        
+        getEl('island-cover-art-small').src = track.cover;
+        getEl('island-cover-art-large').src = track.cover;
+        getEl('island-track-title').textContent = track.title;
+        getEl('island-track-artist').textContent = track.artist;
+        
+        const isPlaying = !musicPlayer.paused;
+        const playIcon = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>`;
+        const pauseIcon = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>`;
+        getEl('island-play-pause-btn').innerHTML = isPlaying ? pauseIcon : playIcon;
+        island.classList.toggle('playing', isPlaying);
+    }
+    
+    function updatePlaybackScreenUI() {
         const currentTrack = db.musicLibrary.find(t => t.id === db.musicPlayerState.currentTrackId);
         if (!currentTrack) return;
-        
-        const playIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>`;
-        const pauseIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>`;
-        const prevIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" /></svg>`;
-        const nextIcon = `<svg viewBox="0 0 24 24" fill="white"><path d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" /></svg>`;
 
-        island.innerHTML = `
-            <img id="island-cover-art" src="${currentTrack.cover}">
-            <div id="island-info">
-                <span id="island-track-title">${currentTrack.title}</span>
-                <span id="island-track-artist">${currentTrack.artist}</span>
-            </div>
-            <div id="island-controls">
-                <button id="island-prev-btn" class="player-btn">${prevIcon}</button>
-                <button id="island-play-pause-btn" class="player-btn">
-                    ${db.musicPlayerState.isPlaying ? pauseIcon : playIcon}
-                </button>
-                <button id="island-next-btn" class="player-btn">${nextIcon}</button>
-            </div>
-        `;
-        island.classList.add('visible');
-    }
+        const bgContainer = getEl('music-playback-screen').querySelector('.playback-background');
+        if (db.musicPlayerBackground && db.musicPlayerBackground !== 'default') {
+            bgContainer.style.backgroundImage = `url(${db.musicPlayerBackground})`;
+        } else {
+            bgContainer.style.backgroundImage = `url(${currentTrack.cover})`;
+        }
 
-    function hideDynamicIsland() {
-        const island = getEl('music-dynamic-island');
-        island.classList.remove('visible');
-        island.classList.remove('expanded');
+        getEl('playback-cover-art').src = currentTrack.cover;
+        getEl('playback-track-title').textContent = currentTrack.title;
+        getEl('playback-track-artist').textContent = currentTrack.artist;
+
+        const isPlaying = !musicPlayer.paused;
+        getEl('vinyl-record-player').classList.toggle('playing', isPlaying);
+        const playBtn = getEl('playback-play-pause-btn');
+        playBtn.querySelector('.play-icon').style.display = isPlaying ? 'none' : 'block';
+        playBtn.querySelector('.pause-icon').style.display = isPlaying ? 'block' : 'none';
     }
 
     init();
