@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>玻璃小手机</title>
+    <title>玻璃机</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/kGYP6CQw/6.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -627,18 +627,20 @@
         }
         .gift-card.received .gift-card-received-stamp { opacity: 1; }
         
-        /* FIX 1: Revamped Music Card Styles */
+        /* 功能更新 2: 音乐卡片玻璃质感 */
         .music-card-share, .listen-together-card {
             width: 230px;
             border-radius: var(--border-radius);
             padding: 10px;
             cursor: pointer;
-            border: 1px solid #eee;
-            background: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
             gap: 12px;
+            background-color: var(--glass-bg-light);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border-color);
         }
         .music-card-share .album-art, .listen-together-card .album-art {
             width: 45px;
@@ -661,17 +663,18 @@
         }
         .music-card-share .artist, .listen-together-card .artist {
             font-size: 12px;
-            color: #888;
+            color: var(--text-secondary);
         }
-
         .listen-together-card {
-            background: linear-gradient(135deg, #fce4ec, #e3f2fd);
+            background: linear-gradient(135deg, rgba(252, 228, 236, 0.6), rgba(227, 242, 253, 0.6));
             flex-direction: column;
             align-items: stretch;
             gap: 8px;
             padding-bottom: 8px;
         }
-        .listen-together-card .music-info {
+        .listen-together-card .music-info-wrapper {
+             display: flex;
+             align-items: center;
              gap: 12px;
         }
         .listen-together-card .invitation-text {
@@ -1252,7 +1255,26 @@
             font-size: 16px; font-weight: 500;
         }
         
-        /* --- Video Call System Styles --- */
+        /* 功能更新 3: 视频通话界面美化 */
+        .call-background {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) brightness(0.6);
+            transform: scale(1.1);
+            z-index: 0;
+        }
+        #outgoing-call-screen, #video-call-screen {
+            color: white;
+            position: relative;
+        }
+        #outgoing-call-screen .outgoing-call-content,
+        #video-call-screen > * {
+            position: relative;
+            z-index: 1;
+        }
+        
         #incoming-call-modal .incoming-call-content {
             background-color: rgba(40, 40, 40, 0.85);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -1300,7 +1322,6 @@
             70% { box-shadow: 0 0 0 15px rgba(76, 217, 100, 0); }
             100% { box-shadow: 0 0 0 0 rgba(76, 217, 100, 0); }
         }
-        #outgoing-call-screen, #video-call-screen { background-color: #1c1c1e; color: white; }
         #outgoing-call-screen {
             justify-content: center; align-items: center; text-align: center;
         }
@@ -1791,7 +1812,7 @@ function adjustColor(hex, percent, alpha = 1) {
 // --- Initial HTML Injection ---
 function injectHTML() {
     // Inject complex HTML structures once on load to keep the body clean.
-    const settingsIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84 c-0.24,0-0.44,0.17-0.48,0.41L9.22,5.25C8.63,5.49,8.1,5.81,7.6,6.19L5.21,5.23C4.99,5.16,4.74,5.22,4.62,5.44L2.7,8.76 C2.59,8.96,2.64,9.23,2.82,9.37l2.03,1.58C4.8,11.36,4.78,11.68,4.78,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.38,2.44 c0.04,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.48,0.41l0.38-2.44c0.59-0.24,1.12-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0.02,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>`;
+    const settingsIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84 c-0.24,0-0.44,0.17-0.48,0.41L9.22,5.25C8.63,5.49,8.1,5.81,7.6,6.19L5.21,5.23C4.99,5.16,4.74,5.22,4.62,5.44L2.7,8.76 C2.59,8.96,2.64,9.23,2.82,9.37l2.03,1.58C4.8,11.36,4.78,11.68,4.78,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.38,2.44 c0.04,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44,0.17,0.48,0.41l0.38-2.44c0.59-0.24,1.12-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0.02,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>`;
     const monologueIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
 
     const htmlMap = {
@@ -2967,34 +2988,34 @@ function handleProfileLongPress(id, type, x, y) {
 }
 
 
-function updateQQHeader(activeTab) {
-    const titleEl = getEl('qq-app-title');
-    const actionsEl = getEl('qq-app-actions');
-    actionsEl.innerHTML = ''; // Clear previous actions
-
-    switch (activeTab) {
-        case 'chat':
-            titleEl.textContent = '微信';
-            actionsEl.innerHTML = `
+function updateQQHeader(activeTab) {    
+const titleEl = getEl('qq-app-title');    
+const actionsEl = getEl('qq-app-actions');    
+actionsEl.innerHTML = ''; // Clear previous actions
+    switch (activeTab) {        
+case 'chat':            
+titleEl.textContent = '微信';            
+actionsEl.innerHTML = `
                 <button class="action-btn" id="qq-action-create-group"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></button>
                 <button class="action-btn" id="qq-action-add-chat" style="font-size: 24px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
-            `;
-            break;
-        case 'contacts':
-            titleEl.textContent = '通讯录';
-            actionsEl.innerHTML = `<button class="action-btn" id="qq-action-add-friend"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="margin-right: 5px;"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>添加朋友</button>`;
-            renderContactsList();
-            break;
-        case 'discover':
-             titleEl.textContent = '发现';
-             break;
-        case 'me':
-            titleEl.textContent = '我';
-            actionsEl.innerHTML = `<button class="action-btn" id="qq-action-add-me" style="font-size: 24px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 4c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 8c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm0 1.9c2.97 0 6.1 1.46 6.1 2.1H5.9c0-.64 3.13-2.1 6.1-2.1z"/></svg></button>`;
-            renderMeTab();
-            break;
+            `;            
+break;        
+case 'contacts':            
+titleEl.textContent = '通讯录';            
+actionsEl.innerHTML = `<button class="action-btn" id="qq-action-add-friend"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="margin-right: 5px;"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>添加朋友</button>`;            
+renderContactsList();            
+break;        
+case 'discover':             
+titleEl.textContent = '发现';             
+break;        
+case 'me':            
+titleEl.textContent = '我';            
+actionsEl.innerHTML = `<button class="action-btn" id="qq-action-add-me" style="font-size: 24px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 4c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 8c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm0 1.9c2.97 0 6.1 1.46 6.1 2.1H5.9c0-.64 3.13-2.1 6.1-2.1z"/></svg></button>`;            
+renderMeTab();            
+break;
     }
 }
+
 
 function renderContactsList() {
     const container = getEl('contacts-list-container');
@@ -6449,38 +6470,34 @@ function setupGroupChatSettings() {
         }
     }
 
-    // --- NEW: Moments Functions ---
-    function setupMomentsApp() {
-        getEl('moments-settings-btn').addEventListener('click', () => { loadMomentsSettings(); switchScreen('moments-settings-screen'); });
-        getEl('moments-settings-form').addEventListener('submit', (e) => { e.preventDefault(); saveMomentsSettings(); });
-        getEl('clear-moments-btn').addEventListener('click', () => { if (confirm('你确定要清空所有朋友圈动态吗？此操作不可恢复。')) { db.moments = []; db.characters.forEach(c => c.lastMomentPostTime = 0); saveData(); renderMomentsFeed(); showToast('所有动态已清空'); } });
-        
-        const momentsScreen = getEl('moments-screen');
-        momentsScreen.addEventListener('click', handleMomentInteraction);
-        
-        momentsScreen.addEventListener('contextmenu', (e) => {
-             e.preventDefault();
-             const momentItem = e.target.closest('.moment-item');
-             if(momentItem) handleMomentLongPress(momentItem.dataset.momentId, e.clientX, e.clientY);
-        });
-        momentsScreen.addEventListener('touchstart', (e) => {
-            const momentItem = e.target.closest('.moment-item');
-            if(!momentItem) return;
-            longPressTimer = setTimeout(() => {
-                const touch = e.touches[0];
-                handleMomentLongPress(momentItem.dataset.momentId, touch.clientX, touch.clientY);
+    // --- NEW: Moments Functions ---    
+function setupMomentsApp() {        
+getEl('moments-settings-btn').addEventListener('click', () => { loadMomentsSettings(); switchScreen('moments-settings-screen'); });        
+getEl('moments-settings-form').addEventListener('submit', (e) => { e.preventDefault(); saveMomentsSettings(); });        
+getEl('clear-moments-btn').addEventListener('click', () => { if (confirm('你确定要清空所有朋友圈动态吗？此操作不可恢复。')) { db.moments = []; db.characters.forEach(c => c.lastMomentPostTime = 0); saveData(); renderMomentsFeed(); showToast('所有动态已清空'); } });                
+const momentsScreen = getEl('moments-screen');        
+momentsScreen.addEventListener('click', handleMomentInteraction);                
+momentsScreen.addEventListener('contextmenu', (e) => {             
+e.preventDefault();             
+const momentItem = e.target.closest('.moment-item');             
+if(momentItem) handleMomentLongPress(momentItem.dataset.momentId, e.clientX, e.clientY);
+        });        
+momentsScreen.addEventListener('touchstart', (e) => {            
+const momentItem = e.target.closest('.moment-item');            
+if(!momentItem) return;            
+longPressTimer = setTimeout(() => {                
+const touch = e.touches[0];                
+handleMomentLongPress(momentItem.dataset.momentId, touch.clientX, touch.clientY);
             }, 500);
-        });
-        momentsScreen.addEventListener('touchend', () => clearTimeout(longPressTimer));
-        momentsScreen.addEventListener('touchmove', () => clearTimeout(longPressTimer));
-
-        getEl('moment-comment-form').addEventListener('submit', handleCommentSubmit);
-        
-        getEl('moments-avatar-upload').addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) try { const url = await compressImage(file, { maxWidth: 200, maxHeight: 200 }); db.momentsSettings.myAvatar = url; getEl('moments-my-avatar-preview').src = url; saveData(); showToast('朋友圈头像已更新'); if(getEl('moments-screen').classList.contains('active')) renderMomentsFeed(); } catch(err) { showToast('头像压缩失败'); } });
-        getEl('moments-bg-upload').addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) try { const url = await compressImage(file, { quality: 0.85, maxWidth: 1080, maxHeight: 1080 }); db.momentsSettings.background = url; getEl('moments-bg-preview').style.backgroundImage = `url(${url})`; saveData(); showToast('朋友圈封面已更新'); if(getEl('moments-screen').classList.contains('active')) renderMomentsFeed(); } catch(err) { showToast('封面压缩失败'); } });
-
+        });        
+momentsScreen.addEventListener('touchend', () => clearTimeout(longPressTimer));        
+momentsScreen.addEventListener('touchmove', () => clearTimeout(longPressTimer));
+        getEl('moment-comment-form').addEventListener('submit', handleCommentSubmit);                
+getEl('moments-avatar-upload').addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) try { const url = await compressImage(file, { maxWidth: 200, maxHeight: 200 }); db.momentsSettings.myAvatar = url; getEl('moments-my-avatar-preview').src = url; saveData(); showToast('朋友圈头像已更新'); if(getEl('moments-screen').classList.contains('active')) renderMomentsFeed(); } catch(err) { showToast('头像压缩失败'); } });        
+getEl('moments-bg-upload').addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) try { const url = await compressImage(file, { quality: 0.85, maxWidth: 1080, maxHeight: 1080 }); db.momentsSettings.background = url; getEl('moments-bg-preview').style.backgroundImage = `url(${url})`; saveData(); showToast('朋友圈封面已更新'); if(getEl('moments-screen').classList.contains('active')) renderMomentsFeed(); } catch(err) { showToast('封面压缩失败'); } });
         setInterval(automaticPostScheduler, 5 * 60 * 1000);
-    }
+    }    
+  
     
     function handleMomentLongPress(momentId, x, y) {
         clearTimeout(longPressTimer);
