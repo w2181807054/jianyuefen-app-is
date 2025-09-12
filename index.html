@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>喷墨机</title>
+    <title>简约机</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/kGYP6CQw/6.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1248,23 +1248,31 @@
             margin-top: 10px; border-radius: 8px;
             display: none;
         }
-        /* FIX 4: REWORKED Quoted/Reply Message Styles */
+        
+        /* FIX 2: REWORKED Quoted/Reply Message Styles */
         .quoted-message {
             background-color: rgba(0,0,0,0.06); 
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 8px; 
             font-size: 13px; color: #555;
             margin-bottom: 6px; 
             border-left: 3px solid var(--primary-color);
             cursor: pointer;
             transition: background-color 0.2s;
+            max-height: 50px;
+            overflow: hidden;
         }
         .quoted-message:hover {
             background-color: rgba(0,0,0,0.1);
         }
-        .quoted-message .author { font-weight: bold; }
+        .quoted-message .author { 
+            font-weight: bold; 
+            white-space: nowrap;
+        }
         .quoted-message .content {
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
             margin-top: 2px;
         }
         .message-wrapper.sent .quoted-message {
@@ -1744,7 +1752,7 @@
             top: 0;
             width: 8px;
             height: 100%;
-            background: linear-gradient(to right, #222, #444);
+            background: linear-gradient(to right, var(--spine-gradient-start, #222), var(--spine-gradient-end, #444));
             border-radius: 4px 0 0 4px;
         }
         .diary-book-title {
@@ -1759,15 +1767,14 @@
             opacity: 0.8;
             text-shadow: 0 1px 2px rgba(0,0,0,0.7);
         }
-        /* FIX 3: Diary View & Page Turn Styles */
+        /* FIX 6: Diary View & Page Turn Styles (Mobile Compatibility) */
         #diary-view-screen .content {
             background-color: #fdfaf2;
             padding: 0;
             font-family: 'Georgia', serif;
             line-height: 1.8;
             color: #4a4a4a;
-            perspective: 1500px;
-            overflow: hidden;
+            overflow: hidden; /* Use simple overflow, remove perspective */
         }
         #diary-view-content-wrapper {
             width: 100%;
@@ -1784,14 +1791,21 @@
             flex-direction: column;
             visibility: hidden;
             opacity: 0;
-            transition: visibility 0s 0.6s, opacity 0.6s ease;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: translateX(100%); /* Start off-screen */
         }
         .diary-page-container.active {
             visibility: visible;
             opacity: 1;
-            transition-delay: 0s;
+            transform: translateX(0);
             z-index: 2;
         }
+        .diary-page-container.turning-out {
+            transform: translateX(-100%);
+            opacity: 0;
+            z-index: 1;
+        }
+
         .diary-page-content {
             flex-grow: 1;
             white-space: pre-wrap;
@@ -1828,23 +1842,6 @@
         }
         .diary-page-turn-area.prev { left: 0; }
         .diary-page-turn-area.next { right: 0; }
-        
-        @keyframes page-turn-out {
-          from { transform: rotateY(0deg); }
-          to { transform: rotateY(-90deg); opacity: 0; }
-        }
-        @keyframes page-turn-in {
-          from { transform: rotateY(90deg); opacity: 0; }
-          to { transform: rotateY(0deg); opacity: 1; }
-        }
-        .diary-page-container.turning-out {
-            animation: page-turn-out 0.6s ease-in-out forwards;
-            z-index: 3;
-        }
-        .diary-page-container.turning-in {
-            animation: page-turn-in 0.6s ease-in-out forwards;
-            z-index: 2;
-        }
         
         /* FIX 2: Diary Management Styles */
         #diary-management-modal .list-item {
@@ -2859,6 +2856,7 @@ let selectedMessageIds = new Set();
 const MESSAGES_PER_PAGE = 50;
 let currentDiaryState = { charId: null, currentPage: 0 }; // 用于日记翻页
 let currentThreadId = null; // FIX 4: Added for forum state
+let currentAiRequestController = null; // FIX 3: For aborting AI requests
 
 let videoCallState = {
     isActive: false,
@@ -2870,7 +2868,6 @@ let videoCallState = {
     participants: [], // For group calls, tracks who joined
     isUserParticipating: true, // Tracks if the user is currently in the call
     callHistory: [], // Transcript of the call
-    
     preCallContext: "" 
 };
 let callTimerInterval = null;
@@ -2979,8 +2976,14 @@ const loadData = () => {
         diarySettings: { 
             autoWriteFrequency: 'medium' // low, medium, high, off
         },
-        forumThreads: [], // FIX 4: Added data structure for forum
-        forumSettings: { // FIX 1: Added forum settings
+        forumThreads: [],
+        forumNpcs: [
+            { id: 'npc_moderator', name: '版主-瓜瓜', avatar: 'https://i.postimg.cc/PqBY7Bqj/avatar-moderator.png', personality: '友好、负责，但有时会因为论坛秩序问题而感到头疼。', keywords: ['公告', '版规', '加精', '和谐讨论'], behaviors: ['post_official_topics', 'resolve_disputes', 'encourage_newbies'] },
+            { id: 'npc_troll', name: '杠精-刺头', avatar: 'https://i.postimg.cc/Zq3gJ1x1/avatar-troll.png', personality: '嘴硬心软，享受辩论的快感，专门挑热门帖子的漏洞，但从不人身攻击。', keywords: ['但是', '难道不是吗', '恕我直言', '逻辑漏洞'], behaviors: ['reply_to_hot_posts', 'challenge_expert'] },
+            { id: 'npc_expert', name: '数据控-考据党', avatar: 'https://i.postimg.cc/jS3yP4k0/avatar-expert.png', personality: '严谨、乐于助人，对特定领域有深入研究，看到不准确的信息会忍不住纠正。', keywords: ['根据数据显示', '实际上', '科普一下', '引用来源'], behaviors: ['post_in_depth_analysis', 'answer_questions', 'correct_misinformation'] },
+            { id: 'npc_memelord', name: '乐子人-梗百科', avatar: 'https://i.postimg.cc/NGRd9T4T/avatar-memelord.png', personality: '神出鬼没，说话喜欢玩梗，总能找到最刁钻的角度发一些有趣的吐槽或表情包帖。', keywords: ['笑死', '蚌埠住了', '典中典', '有一说一'], behaviors: ['post_memes', 'hijack_threads_with_jokes'] }
+        ],
+        forumSettings: { 
             autoPostFrequency: 'medium' // high, medium, low, off
         }
     };
@@ -3027,12 +3030,13 @@ const loadData = () => {
     }
      if (!db.diaries) db.diaries = {}; // Ensure diaries object exists
      if (!db.diarySettings) db.diarySettings = { autoWriteFrequency: 'medium' };
-     if (!db.forumThreads) db.forumThreads = []; // FIX 4: Ensure forum data exists
-     if (!db.forumSettings) db.forumSettings = { autoPostFrequency: 'medium' }; // FIX 1: Ensure forum settings exist
+     if (!db.forumThreads) db.forumThreads = [];
+     if (!db.forumNpcs) db.forumNpcs = defaultDb.forumNpcs;
+     if (!db.forumSettings) db.forumSettings = { autoPostFrequency: 'medium' };
     
     db.characters.forEach(c => {
-        const defaultProactive = { enabled: false, frequency: 'medium' };
-        const defaultAutoMemory = { enabled: false, frequency: 15, lastExtractionCount: 0 };
+        const defaultProactive = { enabled: true, frequency: 'medium' }; // Default to ON
+        const defaultAutoMemory = { enabled: true, frequency: 15, lastExtractionCount: 0 }; // Default to ON
         Object.assign(c, { 
             isPinned: c.isPinned || false, 
             status: c.status || '在线', 
@@ -3049,6 +3053,7 @@ const loadData = () => {
             customBubbleCss: c.customBubbleCss || '',
             chatBg: c.chatBg || 'https://i.postimg.cc/fTBXfFxV/IMG-20250804-223944.jpg',
             lastMomentPostTime: c.lastMomentPostTime || 0,
+            lastForumPostTime: c.lastForumPostTime || 0, // NEW
             patPatResponse: c.patPatResponse || '',
             latestMonologue: c.latestMonologue || '...'
         });
@@ -3229,8 +3234,9 @@ const init = () => {
     setInterval(proactiveChatScheduler, 1 * 60 * 1000); 
     setInterval(momentPruningScheduler, 60 * 60 * 1000); 
     setInterval(interAiReactionScheduler, 10 * 60 * 1000); 
-    setInterval(automaticDiaryScheduler, 30 * 60 * 1000); // AI写日记调度器，每30分钟检查一次
-    setInterval(automaticForumPostScheduler, 45 * 60 * 1000); // FIX 1: AI论坛发帖调度器
+    setInterval(automaticDiaryScheduler, 30 * 60 * 1000); 
+    setInterval(automaticForumPostScheduler, 45 * 60 * 1000); 
+    setInterval(npcReplyScheduler, 2 * 60 * 1000); // NPC scheduler
 
     applyGlobalFont(db.fontUrl);
     applyThemeColor(db.themeColor); 
@@ -3699,6 +3705,7 @@ function renderChatList() {
         const unreadBadgeHTML = (chat.unreadCount || 0) > 0 ? '<span class="unread-badge"></span>' : '';
         li.innerHTML = `<div class="avatar-wrapper" style="position: relative;"><img src="${chat.avatar}" alt="${chat.name || chat.remarkName}" class="chat-avatar ${chat.type === 'group' ? 'group-avatar' : ''}">${unreadBadgeHTML}</div><div class="item-details"><div class="item-details-row"><div class="item-name">${chat.name || chat.remarkName}</div></div><div class="item-preview-wrapper"><div class="item-preview">${lastMessageText}</div>${chat.isPinned ? '<span class="pin-badge">置顶</span>' : ''}</div></div>`;
         
+        // FIX 5: Use a dataset flag to differentiate long press from click
         li.addEventListener('click', (e) => {
              if (li.dataset.longPressed === 'true') {
                 e.preventDefault();
@@ -3722,6 +3729,7 @@ function renderChatList() {
             handleChatListLongPress(chatItem.dataset.id, chatItem.dataset.type, e.clientX, e.clientY);
         }
     });
+    // FIX 5: Long press logic
     chatListContainer.addEventListener('touchstart', (e) => { 
         const chatItem = e.target.closest('.chat-item'); 
         if (!chatItem) return;
@@ -3889,9 +3897,9 @@ function setupChatRoom() {
     getEl('send-user-btn').addEventListener('click', () => sendMessage()); 
     getEl('request-ai-btn').addEventListener('click', () => getAiReply());
     getEl('message-input').addEventListener('keypress', (e) => { 
-        if (e.key === 'Enter' && !isGenerating && getEl('message-input').value.trim()) {
+        if (e.key === 'Enter' && getEl('message-input').value.trim()) {
              e.preventDefault(); 
-             sendMessage(getEl('message-input').value.trim()); // Pass text explicitly
+             sendMessage(getEl('message-input').value.trim());
         }
     });
     getEl('message-input').addEventListener('input', updateInputAreaButtons);
@@ -3923,6 +3931,13 @@ function setupChatRoom() {
 
     const messageArea = getEl('message-area');
     messageArea.addEventListener('click', (e) => {
+        // FIX 5: Prevent click actions when a long press is intended
+        if (e.target.closest('.message-wrapper')?.dataset.longPressed === 'true') {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+
         const voiceBubble = e.target.closest('.voice-bubble');
         if (voiceBubble) {
             const transcript = voiceBubble.closest('.message-content-wrapper').querySelector('.voice-transcript');
@@ -4017,10 +4032,12 @@ function setupChatRoom() {
     messageArea.addEventListener('touchstart', (e) => { 
         const bubbleRow = e.target.closest('.message-bubble-row'); 
         if (!bubbleRow || isInMultiSelectMode) return;
+        const wrapper = bubbleRow.closest('.message-wrapper');
+        wrapper.dataset.longPressed = 'false'; // Reset on new touch
         longPressTimer = setTimeout(() => { 
-            const wrapper = bubbleRow.closest('.message-wrapper');
             const touch = e.touches[0]; 
             handleMessageLongPress(wrapper, touch.clientX, touch.clientY); 
+            wrapper.dataset.longPressed = 'true';
         }, 400); 
     });
     
@@ -4221,7 +4238,7 @@ function openMessageViewer(messageId) {
 }
 
 
-// REWORK 4: Update input area buttons logic
+// FIX 3: REWORKED update function - buttons are no longer disabled
 function updateInputAreaButtons() {
     const input = getEl('message-input');
     const sendBtn = getEl('send-user-btn');
@@ -4233,8 +4250,7 @@ function updateInputAreaButtons() {
     aiBtn.style.display = hasText ? 'none' : 'flex';
     stickerBtn.style.display = hasText ? 'none' : 'flex';
     
-    sendBtn.disabled = isGenerating;
-    aiBtn.disabled = isGenerating;
+    // The .disabled property is no longer managed here
 }
 
 
@@ -4649,7 +4665,7 @@ function toggleStickerModal(forceState) {
              wrapper.dataset.senderName = senderNickname;
         }
 
-        // FIX 4: Quoted/Reply message rendering logic change
+        // FIX 2 & 4: Quoted/Reply message rendering logic change
         let replyHTML = '';
         if (replyTo) {
             replyHTML = `
@@ -4678,7 +4694,6 @@ function toggleStickerModal(forceState) {
         const assignedChar = (currentChatType === 'private') ? (db.characters.find(c => c.id === chat.assignedCharId) || {}) : {};
         const blockedMatch = content.match(new RegExp(`\\[${(assignedChar.realName || '')}被拉黑后的消息：([\\s\S]+?)\\]`));
         
-        // FIX 4: Use a more robust regex that handles reply context.
         const textMatch = content.match(/\[(?:我在回复“.*?”时说|.*的消息)：([\s\S]+?)\]/);
         
         if (htmlCardMatch) {
@@ -4813,7 +4828,6 @@ function toggleStickerModal(forceState) {
         const nicknameHTML = (currentChatType === 'group' && !isSent && senderNickname) ? `<div class="group-nickname">${senderNickname}</div>` : '';
         const timeString = `${pad(new Date(timestamp).getHours())}:${pad(new Date(timestamp).getMinutes())}`;
         
-        // FIX 4: Correctly place the quoted message inside the bubble content wrapper
         if (!/\[.*?的语音：.*?\]/.test(content)) {
             const bubbleNode = document.createElement('div');
             bubbleNode.className = bubbleWrapperClass;
@@ -4821,13 +4835,11 @@ function toggleStickerModal(forceState) {
             if (htmlCardMatch) {
                 finalBubbleHTML = bubbleContentHTML;
             } else {
-                // The replyHTML is now prepended here
                 finalBubbleHTML = `<div class="content-wrapper-inner">${replyHTML}${bubbleContentHTML}</div>`;
             }
             bubbleNode.innerHTML = finalBubbleHTML;
             contentWrapper.appendChild(bubbleNode);
         } else {
-            // For voice, reply is outside the voice bubble itself but inside the wrapper
             if(replyHTML) contentWrapper.insertAdjacentHTML('afterbegin', replyHTML);
         }
 
@@ -4915,6 +4927,7 @@ function toggleStickerModal(forceState) {
     }
 
     function sendMessage(textFromInput = null) {
+        // FIX 3: This function no longer manages the isGenerating state directly for sending.
         const text = (typeof textFromInput === 'string') ? textFromInput : getEl('message-input').value.trim();
         if (!text) return;
 
@@ -5381,26 +5394,29 @@ function generateGroupSystemPrompt(group) {
     return prompt;
 }
 
-// FIX 1: This function now properly disables and enables buttons during AI generation.
-// FIX 3: This function now includes a retry mechanism for API calls.
+// FIX 3: This function now includes an abort controller for user interruption.
 async function getAiReply(customPrompt = null, messages = null, imageBase64 = null) {
-    const isInternalCall = !!customPrompt;
-    if (isGenerating && !isInternalCall) {
-        showToast('AI正在思考中，请稍候...'); // Give user feedback
-        return null; 
+    // Abort any ongoing AI request if a new one is made.
+    if (currentAiRequestController) {
+        currentAiRequestController.abort();
     }
     
     isGenerating = true;
-    updateInputAreaButtons();
     
+    const isInternalCall = !!customPrompt;
+    if (!isInternalCall) {
+        updateInputAreaButtons(); // Update UI to show typing indicator, but buttons are still clickable
+    }
+    
+    currentAiRequestController = new AbortController();
+    const signal = currentAiRequestController.signal;
+
     const activeProfile = db.apiProfiles.find(p => p.id === db.activeApiProfileId);
 
     if (!activeProfile || !activeProfile.url || !activeProfile.key || !activeProfile.model) {
-        if (!isInternalCall) { 
-             showToast('请先在"API"应用中完成设置！');
-        }
+        if (!isInternalCall) showToast('请先在"API"应用中完成设置！');
         isGenerating = false;
-        updateInputAreaButtons();
+        if (!isInternalCall) updateInputAreaButtons();
         return null;
     }
     
@@ -5470,7 +5486,7 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
                 };
                  
                 const fetchUrl = `${url}/v1beta/models/${model}:generateContent?key=${key}`;
-                response = await fetchWithRetry(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload) });
+                response = await fetchWithRetry(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload), signal });
             }
         } else { // Standard text chat
             if (provider === 'gemini') {
@@ -5478,10 +5494,10 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
                  if (currentChatType === 'private' && !isInternalCall) geminiPayload.generationConfig.responseMimeType = "application/json";
                  if(geminiPayload.contents[0]?.role === 'user' && geminiPayload.contents[0]?.parts[0].text.includes(systemPrompt)) geminiPayload.contents.shift(); 
                  const fetchUrl = stream ? `${url}/v1beta/models/${model}:streamGenerateContent?key=${key}` : `${url}/v1beta/models/${model}:generateContent?key=${key}`;
-                 response = await fetchWithRetry(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload) });
+                 response = await fetchWithRetry(fetchUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(geminiPayload), signal });
             } else {
                 openaiPayload = { ...openaiPayload, model, messages: payloadMessages, stream };
-                response = await fetchWithRetry(`${url}/v1/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: JSON.stringify(openaiPayload) });
+                response = await fetchWithRetry(`${url}/v1/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: JSON.stringify(openaiPayload), signal });
             }
         }
 
@@ -5527,15 +5543,22 @@ async function getAiReply(customPrompt = null, messages = null, imageBase64 = nu
             }
         }
     } catch (error) {
-        console.error('AI回复失败:', error);
-        if (!isInternalCall) showToast(`AI回复失败: ${error.message}`);
+        if (error.name === 'AbortError') {
+            console.log('AI generation was aborted by the user.'); // This is an expected action, not an error.
+        } else {
+            console.error('AI回复失败:', error);
+            if (!isInternalCall) showToast(`AI回复失败: ${error.message}`);
+        }
         return null;
     } finally {
         isGenerating = false;
+        currentAiRequestController = null;
         if (chat && !isInternalCall) {
             getEl('typing-indicator').style.display = 'none';
         }
-        updateInputAreaButtons();
+        if (!isInternalCall) {
+            updateInputAreaButtons();
+        }
     }
 }
     
@@ -7974,6 +7997,7 @@ const postAuthor = db.characters.find(c => c.id === momentToReact.characterId) |
 
             const lastMessage = character.history.length > 0 ? character.history[character.history.length - 1] : null;
 
+            // FIX 4: More aggressive check, if last message is not from user, skip.
             if (lastMessage && lastMessage.role !== 'user') {
                 continue;
             }
@@ -8044,6 +8068,7 @@ const postAuthor = db.characters.find(c => c.id === momentToReact.characterId) |
 
         
         let historyContext = "你们还没有聊过天，这是你第一次主动和对方打招呼。";
+        // FIX 4: Enhance history context
         if (lastMessage) {
             const lastMessageTime = new Date(lastMessage.timestamp);
             const timeDiffHours = (currentTime - lastMessageTime) / 3600000;
@@ -8058,7 +8083,13 @@ const postAuthor = db.characters.find(c => c.id === momentToReact.characterId) |
                 const text = contentMatch ? contentMatch[1] : m.content;
                 return `${sender}: ${text}`;
             }).join('\n');
-            historyContext = `你们上次对话是在${timeDiffText}。\n\n---最近的聊天记录：\n${lastMessages}\n---`;
+
+            let lastInteractionSummary = `你们上次对话是在${timeDiffText}。\n\n---最近的聊天记录：\n${lastMessages}\n---`;
+            
+            if (lastMessage.role === 'user' && (lastMessage.content.includes('?') || lastMessage.content.includes('在吗'))) {
+                 lastInteractionSummary += "\n【特别注意】：对方上一条消息似乎在等待你的回复。";
+            }
+            historyContext = lastInteractionSummary;
         }
 
         return `你正在扮演角色“${assignedChar.realName}”，人设是：${assignedChar.persona}。
@@ -8067,7 +8098,7 @@ ${historyContext}
 
 你的任务是：根据当前时间和你们的聊天历史，非常自然地开启一个新的话题或继续之前的话题，主动发消息给“${assignedMe.myName}”。
 【重要】请参考当前时间和上次对话的时间差来决定你的开场白。例如，如果是第二天早上，可以说“早上好”；如果只是过了几个小时，可以接着之前的话题说。
-【禁止】绝对不许使用“在吗？”、“你好”这类干巴巴的开场白。你的开场白必须有内容，有意义。
+【禁止】绝对不许使用“在吗？”、“你好”这类干巴巴的开场白。你的开场白必须有内容，有意义，符合人设。
 【输出限制】你的回复必须且只能包含一条简短的消息。模仿真实的人类聊天习惯，不要长篇大论。
 【要求】你的输出【必须】是【单个JSON对象】，该对象包含两个键：
     a) "monologue": 字符串类型，代表你【当前】的内心独白（心声）。
@@ -8827,7 +8858,7 @@ ${historyContext}
         getEl('listen-together-timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    // --- NEW: Favorites, Files, Diary, Forum ---
+    // --- NEW & MODIFIED: Favorites, Files, Diary, Forum ---
     function setupFavoritesApp() {
         const favList = getEl('favorites-list-container');
         favList.addEventListener('contextmenu', e => {
@@ -8944,7 +8975,7 @@ ${historyContext}
             }
         });
 
-        // FIX 3: Event delegation for page turning and deleting
+        // FIX 6: Event delegation for page turning and deleting
         const diaryViewWrapper = getEl('diary-view-content-wrapper');
         diaryViewWrapper.addEventListener('click', (e) => {
              if (e.target.classList.contains('diary-page-turn-area')) {
@@ -8989,7 +9020,9 @@ ${historyContext}
                     timestamp: Date.now(),
                     likes: []
                 }],
-                views: 0
+                views: 0,
+                hotness: 0, // NEW
+                lastReplyTimestamp: Date.now() // NEW
             };
 
             db.forumThreads.unshift(newThread);
@@ -9026,6 +9059,7 @@ ${historyContext}
             };
 
             thread.posts.push(newPost);
+            thread.lastReplyTimestamp = Date.now(); // Update last reply time
             saveData();
             renderForumThreadView(currentThreadId);
             getEl('new-reply-content').value = '';
@@ -9089,10 +9123,10 @@ ${historyContext}
                 cover.style.backgroundBlendMode = 'multiply';
             }
             if (character.diarySpineColor) {
+                // Use CSS variables to style the ::before pseudo-element
                 cover.style.setProperty('--spine-gradient-start', adjustColor(character.diarySpineColor, -20));
                 cover.style.setProperty('--spine-gradient-end', adjustColor(character.diarySpineColor, 20));
             }
-             cover.querySelector('::before').style.background = `linear-gradient(to right, var(--spine-gradient-start, #222), var(--spine-gradient-end, #444))`;
 
             cover.innerHTML = `
                 <div class="diary-book-title">${character.id === 'user_me' ? 'My Diary' : `${character.remarkName}的日记`}</div>
@@ -9111,33 +9145,29 @@ ${historyContext}
     function renderDiaryView(charId, pageIndex) {
         const character = charId === 'user_me' ? { id: 'user_me', remarkName: '我', ...db.meProfiles[0] } : db.characters.find(c => c.id === charId);
         const entries = db.diaries[charId];
-        if (!character || !entries || !entries[pageIndex]) {
-            showToast('找不到日记内容或已是最后一页');
-            // If we deleted the last page, go back to bookshelf
-            if (!entries || entries.length === 0) {
+        
+        if (!character || !entries || pageIndex < 0 || pageIndex >= entries.length) {
+            if (entries && entries.length > 0) {
+                 showToast(pageIndex < 0 ? '已经是第一页了' : '已经是最后一页了');
+            } else {
                 renderDiaryBookshelf();
                 switchScreen('diary-screen');
             }
             return;
         }
 
+
         currentDiaryState = { charId, currentPage: pageIndex };
 
         getEl('diary-view-title').textContent = `${character.remarkName}的日记`;
         const contentWrapper = getEl('diary-view-content');
         
-        // FIX 3: Page turning logic
-        const oldPage = contentWrapper.querySelector('.diary-page-container.active');
-        if (oldPage) {
-            oldPage.classList.add('turning-out');
-            setTimeout(() => oldPage.remove(), 600);
-        }
+        const oldPage = contentWrapper.querySelector('.diary-page-container');
+        if (oldPage) oldPage.remove();
 
         const newPage = document.createElement('div');
-        newPage.className = 'diary-page-container';
-        if(oldPage) newPage.classList.add('turning-in'); // Add turning effect only if there was an old page
+        newPage.className = 'diary-page-container active'; 
         
-        // FIX 3: Apply custom page background
         if(character.diaryPageBg) {
              newPage.style.backgroundImage = `url(${character.diaryPageBg})`;
         }
@@ -9151,7 +9181,6 @@ ${historyContext}
                 <div>${entry.content}</div>
             </div>`;
         contentWrapper.appendChild(newPage);
-        setTimeout(() => newPage.classList.add('active'), 0); // Activate after append
         
         getEl('diary-page-indicator').textContent = `第 ${pageIndex + 1} / ${entries.length} 页`;
         
@@ -9200,7 +9229,12 @@ ${historyContext}
             const timeSinceLastDiary = Date.now() - (lastDiary ? lastDiary.timestamp : 0);
             const randomInterval = (Math.random() * (setting.max - setting.min) + setting.min) * 3600000;
             
-            if (timeSinceLastDiary > randomInterval) {
+            // FIX 4: Make AI more proactive in writing diary
+            const recentMessages = character.history.slice(-20);
+            const significantEvent = recentMessages.some(m => /礼物|转账|红包|吵架|约定|喜欢|讨厌/.test(m.content));
+            const shouldWrite = timeSinceLastDiary > randomInterval || (significantEvent && timeSinceLastDiary > (setting.min / 2) * 3600000);
+
+            if (shouldWrite) {
                 const diaryPrompt = generateDiaryPrompt(character);
                 const diaryContent = await getAiReply(diaryPrompt);
                 if (diaryContent && !diaryContent.includes("无需记录")) {
@@ -9332,6 +9366,116 @@ ${historyContext}
     }
 
     // FIX 4: All new Forum functions
+    function setupForumApp() { 
+        getEl('new-post-btn').addEventListener('click', () => {
+            getEl('new-post-form').reset();
+            getEl('new-post-modal').classList.add('visible');
+        });
+
+        getEl('new-post-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = getEl('new-post-title').value.trim();
+            const content = getEl('new-post-content').value.trim();
+            const tag = getEl('new-post-tag').value.trim();
+            
+            if (!title || !content) {
+                showToast("标题和内容不能为空");
+                return;
+            }
+            
+            const meProfile = db.meProfiles[0];
+            const newThread = {
+                id: `thread_${Date.now()}`,
+                title,
+                tag: tag || '闲聊',
+                authorId: 'user_me',
+                authorName: meProfile.myName,
+                authorAvatar: meProfile.myAvatar,
+                timestamp: Date.now(),
+                posts: [{
+                    id: `post_${Date.now()}`,
+                    authorId: 'user_me',
+                    authorName: meProfile.myName,
+                    authorAvatar: meProfile.myAvatar,
+                    content,
+                    timestamp: Date.now(),
+                    likes: []
+                }],
+                views: 0,
+                hotness: 0, // NEW
+                lastReplyTimestamp: Date.now() // NEW
+            };
+
+            db.forumThreads.unshift(newThread);
+            saveData();
+            renderForumThreadsList();
+            getEl('new-post-modal').classList.remove('visible');
+            triggerAiForumReactions(newThread.id); // Trigger AI replies after posting
+        });
+
+        getEl('forum-thread-list').addEventListener('click', (e) => {
+            const threadItem = e.target.closest('.forum-thread-item');
+            if (threadItem) {
+                renderForumThreadView(threadItem.dataset.id);
+            }
+        });
+
+        getEl('new-reply-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const content = getEl('new-reply-content').value.trim();
+            if (!content || !currentThreadId) return;
+
+            const thread = db.forumThreads.find(t => t.id === currentThreadId);
+            if (!thread) return;
+
+            const meProfile = db.meProfiles[0];
+            const newPost = {
+                id: `post_${Date.now()}`,
+                authorId: 'user_me',
+                authorName: meProfile.myName,
+                authorAvatar: meProfile.myAvatar,
+                content,
+                timestamp: Date.now(),
+                likes: []
+            };
+
+            thread.posts.push(newPost);
+            thread.lastReplyTimestamp = Date.now(); // Update last reply time
+            saveData();
+            renderForumThreadView(currentThreadId);
+            getEl('new-reply-content').value = '';
+            triggerAiForumReactions(thread.id); // Trigger AI replies after user replies
+        });
+     }
+    
+    function renderFavoritesList() {
+        const container = getEl('favorites-list-container');
+        container.innerHTML = '';
+        getEl('no-favorites-placeholder').style.display = db.favorites.length === 0 ? 'block' : 'none';
+        
+        db.favorites.forEach(fav => {
+            const li = document.createElement('li');
+            li.className = 'list-item';
+            li.dataset.id = fav.id;
+
+            const chat = (fav.originalChatType === 'private') 
+                ? db.characters.find(c => c.id === fav.originalChatId) 
+                : db.groups.find(g => g.id === fav.originalChatId);
+            
+            const sourceName = chat ? (chat.name || chat.remarkName) : '未知对话';
+            let previewText = fav.content.match(/\[.*?的消息：([\s\S]+?)\]/)?.[1] || fav.content;
+            if (previewText.length > 50) previewText = previewText.substring(0, 50) + '...';
+
+            li.innerHTML = `
+                <div class="item-details" style="padding-left:15px;">
+                    <div class="item-name" style="font-size: 14px; font-weight: normal;">${previewText}</div>
+                    <div class="item-preview" style="margin-top: 8px;">来自: ${sourceName}</div>
+                </div>
+            `;
+            container.appendChild(li);
+        });
+    }
+
     function renderForumThreadsList() {
         const container = getEl('forum-thread-list');
         container.innerHTML = '';
@@ -9342,7 +9486,7 @@ ${historyContext}
         }
         placeholder.style.display = 'none';
 
-        db.forumThreads.sort((a,b) => b.timestamp - a.timestamp).forEach(thread => {
+        db.forumThreads.sort((a,b) => b.lastReplyTimestamp - a.lastReplyTimestamp).forEach(thread => {
             const item = document.createElement('div');
             item.className = 'forum-thread-item';
             item.dataset.id = thread.id;
@@ -9363,7 +9507,7 @@ ${historyContext}
                         <span>${thread.posts.length - 1} 回复</span>
                         <span>${thread.views} 浏览</span>
                     </div>
-                    <span class="forum-thread-time">${formatTimeAgo(thread.timestamp)}</span>
+                    <span class="forum-thread-time">${formatTimeAgo(thread.lastReplyTimestamp)}</span>
                 </div>`;
             container.appendChild(item);
         });
@@ -9486,7 +9630,9 @@ ${historyContext}
                                 timestamp: Date.now(),
                                 likes: []
                             }],
-                            views: 0
+                            views: 0,
+                            hotness: 0,
+                            lastReplyTimestamp: Date.now()
                         };
                         db.forumThreads.unshift(newThread);
                         character.lastForumPostTime = Date.now();
@@ -9497,6 +9643,57 @@ ${historyContext}
                         triggerAiForumReactions(newThread.id);
                      }
                  }
+            }
+        }
+    }
+
+    async function npcReplyScheduler() {
+        if (db.forumThreads.length === 0 || db.forumNpcs.length === 0) return;
+        
+        // Pick a random thread that has had recent activity
+        const recentThreads = db.forumThreads.filter(t => (Date.now() - t.lastReplyTimestamp) < (2 * 60 * 60 * 1000)); // last 2 hours
+        if (recentThreads.length === 0) return;
+        
+        const thread = recentThreads[Math.floor(Math.random() * recentThreads.length)];
+        
+        // Pick a random NPC that hasn't replied to this thread yet
+        const repliedNpcIds = new Set(thread.posts.map(p => p.authorId));
+        const availableNpcs = db.forumNpcs.filter(npc => !repliedNpcIds.has(npc.id));
+        if (availableNpcs.length === 0) return;
+
+        const npc = availableNpcs[Math.floor(Math.random() * availableNpcs.length)];
+
+        // Random chance to reply
+        if (Math.random() > 0.3) return; 
+
+        const prompt = `你正在扮演一个论坛用户，你的名字是“${npc.name}”，你的性格是：“${npc.personality}”。
+        你正在看一个论坛帖子。
+        --- 帖子信息 ---
+        标题: ${thread.title}
+        楼主 (${thread.authorName}): ${thread.posts[0].content}
+        --- 已有回复 ---
+        ${thread.posts.slice(1).map(p => `${p.authorName}: ${p.content}`).join('\n')}
+        --- 你的任务 ---
+        请根据你的角色性格，对这个帖子或其中的某个回复，发表一个简短、口语化的回复。直接输出回复内容即可，不要任何多余的格式。`;
+
+        const replyContent = await getAiReply(prompt);
+        if (replyContent && replyContent.trim()) {
+            const currentThread = db.forumThreads.find(t => t.id === thread.id);
+            if(currentThread) {
+                currentThread.posts.push({
+                    id: `post_${Date.now()}`,
+                    authorId: npc.id,
+                    authorName: npc.name,
+                    authorAvatar: npc.avatar,
+                    content: replyContent.trim(),
+                    timestamp: Date.now(),
+                    likes: []
+                });
+                currentThread.lastReplyTimestamp = Date.now();
+                saveData();
+                if (getEl('forum-thread-view-screen').classList.contains('active') && currentThreadId === thread.id) {
+                    renderForumThreadView(thread.id);
+                }
             }
         }
     }
@@ -9533,6 +9730,7 @@ ${historyContext}
                              timestamp: Date.now(),
                              likes: []
                          });
+                         currentThread.lastReplyTimestamp = Date.now();
                          saveData();
                          if (getEl('forum-thread-view-screen').classList.contains('active') && currentThreadId === threadId) {
                              renderForumThreadView(threadId);
@@ -9554,6 +9752,9 @@ ${historyContext}
                 }
                 console.warn(`Attempt ${i + 1} failed with status ${response.status}. Retrying in ${delay}ms...`);
             } catch (error) {
+                 if (error.name === 'AbortError') {
+                    throw error; // Re-throw abort errors immediately
+                }
                 console.warn(`Attempt ${i + 1} failed with error: ${error.message}. Retrying in ${delay}ms...`);
             }
             await new Promise(resolve => setTimeout(resolve, delay));
